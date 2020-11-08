@@ -4,11 +4,16 @@ using UnityEngine;
 
 public class PoliceController : MonoBehaviour, IMove, IAttack
 {
+    [SerializeField] private GameObject _target = null;
+
     private FSMController<string> _myFSM;
     private INode _initialNode;
+    private LineOfSight _lineOfSigh = null;
 
     private void Start()
     {
+        _lineOfSigh = GetComponent<LineOfSight>();
+
         //FSM
         IdleState<string> idle = new IdleState<string>();
         ReloadState<string> reloadAmmo = new ReloadState<string>(this);
@@ -16,7 +21,7 @@ public class PoliceController : MonoBehaviour, IMove, IAttack
         PursuitState<string> pursuit = new PursuitState<string>(this);
         KillState<string> kill = new KillState<string>(this);
 
-        _myFSM = new FSMController<string>(idle);
+        _myFSM = new FSMController<string>(walk);
 
         idle.AddTransitionToState("walk", walk);
         idle.AddTransitionToState("pursuit", pursuit);
@@ -50,11 +55,14 @@ public class PoliceController : MonoBehaviour, IMove, IAttack
         QuestionNode isTargetNear = new QuestionNode(IsTargetNear, haveAmmo, pursuit);
         QuestionNode amIExhausted = new QuestionNode(WalkedALot, idle, walk);
         QuestionNode isInSight = new QuestionNode(IsTargetInSight, isTargetNear, amIExhausted);
+
+        _initialNode = isInSight;
     }
 
     private void Update()
     {
         _myFSM.OnUpdate();
+        _initialNode.Execute();
     }
 
     public void KillTarget() { } //IATTACK 
@@ -74,7 +82,7 @@ public class PoliceController : MonoBehaviour, IMove, IAttack
 
     public bool IsTargetInSight() 
     {
-        return false;
+        return _lineOfSigh.IsTargetInSight(_target);
     }
 
     public bool CheckAmmoLeft()
