@@ -5,9 +5,16 @@ using UnityEngine;
 public class PoliceController : MonoBehaviour, IMove, IAttack
 {
     [SerializeField] private GameObject _target = null;
+    private float walkSpeed = 2;
+    private Rigidbody rb = null;
 
-    
-
+    //PathFind
+    [SerializeField] private Node _startNode = null;
+    [SerializeField] private Node[] _endNodes = null; //Que tenga todos los nodos
+    [SerializeField] private float smoothnessTurn = 1;
+    private PathfindController _myPathfindController;
+    private int nextWayPoint = 0;
+    private int movementOrientation = 1;
 
     //Ammo
     private float _reloadingAmmoTime = 2;
@@ -27,6 +34,13 @@ public class PoliceController : MonoBehaviour, IMove, IAttack
 
     private void Start()
     {
+        rb = GetComponent<Rigidbody>();
+
+        var rndEndNode = Random.Range(0, _endNodes.Length);
+        _myPathfindController = new PathfindController(_startNode, _endNodes[rndEndNode]);
+        print($"El nodo inicial es {_initialNode} y el nodo final es {_endNodes[rndEndNode]}");
+        _myPathfindController.Execute();
+
         _ammoLeft = _maxAmmo;
 
         _lineOfSigh = GetComponent<LineOfSight>();
@@ -87,8 +101,9 @@ public class PoliceController : MonoBehaviour, IMove, IAttack
     public void Move() //IMOVE
     {
         _currentWalkedTime += Time.deltaTime;
-
-        //Logica de moverse
+        var direction = GetNextPosition();
+        rb.velocity = direction * walkSpeed;
+        transform.forward = direction;
     } 
 
     public void PursuitTarget() { } //IATTACK
@@ -127,6 +142,22 @@ public class PoliceController : MonoBehaviour, IMove, IAttack
     public bool IsTargetNear()
     {
         return _lineOfSigh.GetDistanceToTarget(_nearDistance);
+    }
+
+    private Vector3 GetNextPosition()
+    {
+        var nextPointPosition = _myPathfindController.AStarResult[nextWayPoint].transform.position;
+        Vector3 direction = nextPointPosition - transform.position;
+
+        if(direction.magnitude < smoothnessTurn) 
+        {
+            if(nextWayPoint + movementOrientation >= _myPathfindController.AStarResult.Count || nextWayPoint + movementOrientation < 0) 
+            {
+                movementOrientation *= -1;
+            }
+            nextWayPoint += movementOrientation;
+        }
+        return direction.normalized;
     }
 
     IEnumerator ReloadingAmmo(float reloadingAmmoTime)
