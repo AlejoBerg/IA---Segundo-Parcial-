@@ -9,18 +9,19 @@ public class LineOfSight : MonoBehaviour
     [SerializeField] private float _fieldOfView = 0; //Angulo
     [SerializeField] private LayerMask _obstacleMast;
 
+    private float _distance = 0;
 
     public bool IsTargetInSight(GameObject target)
     {
-        var diff = target.transform.position - transform.position;
-        var distance = diff.magnitude;
+        var _diff = target.transform.position - transform.position;
+        _distance = _diff.magnitude;
 
-        if (distance <= _rangeOfVision) 
+        if (_distance <= _rangeOfVision) 
         {
-            var angleToTarget = Vector3.Angle(transform.forward, diff.normalized); // Uso diff y no distance porque el primero es un vector3, el segundo es solamente un float
+            var angleToTarget = Vector3.Angle(transform.forward, _diff.normalized); // Uso diff y no distance porque el primero es un vector3, el segundo es solamente un float
             if(angleToTarget <= _fieldOfView)
             {
-                if(Physics.Raycast(transform.position, diff.normalized, distance, _obstacleMast))
+                if(Physics.Raycast(transform.position, _diff.normalized, _distance, _obstacleMast))
                 {
                     return false; //Colision obstaculo
                 }
@@ -28,6 +29,18 @@ public class LineOfSight : MonoBehaviour
             }
         }
         return false;
+    }
+
+    public bool GetDistanceToTarget(float distance)
+    {
+        if (_distance < distance) 
+        {
+            return true;
+        }
+        else 
+        {
+            return false;
+        }   
     }
 
     private void OnDrawGizmos()
