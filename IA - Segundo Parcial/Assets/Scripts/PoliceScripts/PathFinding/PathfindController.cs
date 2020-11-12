@@ -19,7 +19,7 @@ public class PathfindController
 
     public void Execute()
     {
-        aStarResult = myAStar.RunPathfinding(initialNode, SatisfiesCondition, GetNeighbour, GetConnectionCost, GetHeuristic, 1000);
+        aStarResult = myAStar.RunPathfinding(initialNode, SatisfiesCondition, GetNeighbour, GetConnectionCost, GetHeuristic, 80);
     }
 
     private bool SatisfiesCondition(Node _current)

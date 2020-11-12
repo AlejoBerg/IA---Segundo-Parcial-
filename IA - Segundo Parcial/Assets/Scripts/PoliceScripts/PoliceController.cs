@@ -28,24 +28,24 @@ public class PoliceController : MonoBehaviour, IMove, IAttack
     private float _walkTimeBeforeIdle = 5f;
     private float _currentWalkedTime = 0;
 
-    private FSMController<string> _myFSM;
+    private FSMController<string> _myFSMController;
     private INode _initialNode;
     private LineOfSight _lineOfSigh = null;
 
-    private void Start()
+    private void Awake()
     {
         rb = GetComponent<Rigidbody>();
 
         var rndEndNode = Random.Range(0, _endNodes.Length);
         _myPathfindController = new PathfindController(_startNode, _endNodes[rndEndNode]);
-        print($"El nodo inicial es {_initialNode} y el nodo final es {_endNodes[rndEndNode]}");
+        print("endnode = " + _endNodes[rndEndNode]);
         _myPathfindController.Execute();
 
         _ammoLeft = _maxAmmo;
-
         _lineOfSigh = GetComponent<LineOfSight>();
-
         //FSM
+        _myFSMController = new FSMController<string>();
+
         IdleState<string> idle = new IdleState<string>();
         ReloadState<string> reloadAmmo = new ReloadState<string>(this);
         WalkState<string> walk = new WalkState<string>(this);
@@ -77,7 +77,7 @@ public class PoliceController : MonoBehaviour, IMove, IAttack
         pursuit.AddTransitionToState("kill", kill);
         pursuit.AddTransitionToState("reloadAmmo", reloadAmmo);
 
-        _myFSM = new FSMController<string>(walk);
+        _myFSMController.SetInitialState(walk);
 
         //TREE
         ActionNode respawn = new ActionNode(Respawn);
@@ -92,8 +92,8 @@ public class PoliceController : MonoBehaviour, IMove, IAttack
 
     private void Update()
     {
-        _myFSM.OnUpdate();
         _initialNode.Execute();
+        _myFSMController.OnUpdate();
     }
 
     public void KillTarget() { } //IATTACK 

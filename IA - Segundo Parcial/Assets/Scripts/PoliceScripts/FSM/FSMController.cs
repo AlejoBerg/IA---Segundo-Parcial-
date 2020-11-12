@@ -6,7 +6,7 @@ public class FSMController<T>
 {
     private FSMState<T> _curretState;
 
-    public FSMController(FSMState<T> initialState)
+    public void SetInitialState(FSMState<T> initialState)
     {
         _curretState = initialState;
         _curretState.Awake();
@@ -15,6 +15,7 @@ public class FSMController<T>
     public void OnUpdate()
     {
         _curretState.Execute();
+        Debug.Log("currentState = " + _curretState);
     }
 
     public void MakeTransition(T input)

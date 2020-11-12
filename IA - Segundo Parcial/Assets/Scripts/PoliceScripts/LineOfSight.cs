@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class LineOfSight : MonoBehaviour
 {
-    [SerializeField] private float _rangeOfVision = 0; //Distancia
+    [SerializeField] private float _angleOfVision = 0; //Distancia
     [SerializeField] private float _fieldOfView = 0; //Angulo
     [SerializeField] private LayerMask _obstacleMast;
 
@@ -16,7 +16,7 @@ public class LineOfSight : MonoBehaviour
         var _diff = target.transform.position - transform.position;
         _distance = _diff.magnitude;
 
-        if (_distance <= _rangeOfVision) 
+        if (_distance <= _angleOfVision) 
         {
             var angleToTarget = Vector3.Angle(transform.forward, _diff.normalized); // Uso diff y no distance porque el primero es un vector3, el segundo es solamente un float
             if(angleToTarget <= _fieldOfView)
@@ -47,8 +47,8 @@ public class LineOfSight : MonoBehaviour
     {
         Gizmos.color = Color.red;
         Gizmos.DrawRay(transform.position, transform.forward * _fieldOfView);
-        Gizmos.DrawRay(transform.position, Quaternion.Euler(0, _fieldOfView / 2, 0) * transform.forward * _fieldOfView);
-        Gizmos.DrawRay(transform.position, Quaternion.Euler(0, -_fieldOfView / 2, 0) * transform.forward * _fieldOfView);
+        Gizmos.DrawRay(transform.position, Quaternion.Euler(0, _angleOfVision / 2, 0) * transform.forward * _fieldOfView);
+        Gizmos.DrawRay(transform.position, Quaternion.Euler(0, -_angleOfVision / 2, 0) * transform.forward * _fieldOfView);
         Gizmos.DrawWireSphere(transform.position, _fieldOfView);
     }
 }
