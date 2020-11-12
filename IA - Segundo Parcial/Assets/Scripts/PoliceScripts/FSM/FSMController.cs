@@ -15,7 +15,6 @@ public class FSMController<T>
     public void OnUpdate()
     {
         _curretState.Execute();
-        Debug.Log("currentState = " + _curretState);
     }
 
     public void MakeTransition(T input)

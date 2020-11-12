@@ -12,6 +12,7 @@ public class WalkState<T> : FSMState<T>
 
     public override void Execute() 
     {
+        //Debug.Log("Ejecutando WalkState - Move");
         _objectToMoveRef.Move();
     }
 }

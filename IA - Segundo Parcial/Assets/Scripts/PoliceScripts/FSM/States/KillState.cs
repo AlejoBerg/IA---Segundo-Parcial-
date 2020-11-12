@@ -13,6 +13,7 @@ public class KillState<T> : FSMState<T>
 
     public override void Execute() 
     {
+        //Debug.Log("Ejecutando KillState - KillTarget");
         _attacker.KillTarget();
     }
 }

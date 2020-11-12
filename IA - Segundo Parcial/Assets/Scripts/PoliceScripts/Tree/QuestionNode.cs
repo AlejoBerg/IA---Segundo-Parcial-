@@ -20,10 +20,12 @@ public class QuestionNode : INode
     {
         if (_question())
         {
+            //Debug.Log("ejecutando true del arbol");
             _trueNode.Execute();
         }
         else
         {
+            //Debug.Log("ejecutando false del arbol");
             _falseNode.Execute();
         }
     }

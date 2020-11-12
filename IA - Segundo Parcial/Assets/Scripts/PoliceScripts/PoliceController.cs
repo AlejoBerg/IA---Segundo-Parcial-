@@ -2,19 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PoliceController : MonoBehaviour, IMove, IAttack
+public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle
 {
     [SerializeField] private GameObject _target = null;
+    private Rigidbody _targetRB = null;
     private float walkSpeed = 2;
     private Rigidbody rb = null;
 
     //PathFind
-    [SerializeField] private Node _startNode = null;
-    [SerializeField] private Node[] _endNodes = null; //Que tenga todos los nodos
+    private int _startNode = 0;
+    [SerializeField] private Node[] nodes; //Que tenga todos los nodos
     [SerializeField] private float smoothnessTurn = 1;
     private PathfindController _myPathfindController;
+    private int wayPointIncrease = 1;
     private int nextWayPoint = 0;
-    private int movementOrientation = 1;
 
     //Ammo
     private float _reloadingAmmoTime = 2;
@@ -29,24 +30,33 @@ public class PoliceController : MonoBehaviour, IMove, IAttack
     private float _currentWalkedTime = 0;
 
     private FSMController<string> _myFSMController;
-    private INode _initialNode;
     private LineOfSight _lineOfSigh = null;
+    private INode _initialNode;
+
+    //Steering
+    private Pursuit pursuitSteering;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
 
-        var rndEndNode = Random.Range(0, _endNodes.Length);
-        _myPathfindController = new PathfindController(_startNode, _endNodes[rndEndNode]);
-        print("endnode = " + _endNodes[rndEndNode]);
+        RandomWithException rndWithException = new RandomWithException(0, nodes.Length, _startNode);
+        var randomEndNode = rndWithException.Randomize();
+        _myPathfindController = new PathfindController(nodes[_startNode], nodes[randomEndNode]);
         _myPathfindController.Execute();
+        _startNode = randomEndNode;
 
         _ammoLeft = _maxAmmo;
         _lineOfSigh = GetComponent<LineOfSight>();
+
+        //Steerings
+        _targetRB = _target.GetComponent<Rigidbody>();
+        pursuitSteering = new Pursuit(_target.transform, this.transform, _targetRB, 2);
+
         //FSM
         _myFSMController = new FSMController<string>();
 
-        IdleState<string> idle = new IdleState<string>();
+        IdleState<string> idle = new IdleState<string>(this);
         ReloadState<string> reloadAmmo = new ReloadState<string>(this);
         WalkState<string> walk = new WalkState<string>(this);
         PursuitState<string> pursuit = new PursuitState<string>(this);
@@ -77,7 +87,7 @@ public class PoliceController : MonoBehaviour, IMove, IAttack
         pursuit.AddTransitionToState("kill", kill);
         pursuit.AddTransitionToState("reloadAmmo", reloadAmmo);
 
-        _myFSMController.SetInitialState(walk);
+        _myFSMController.SetInitialState(idle);
 
         //TREE
         ActionNode respawn = new ActionNode(Respawn);
@@ -93,10 +103,13 @@ public class PoliceController : MonoBehaviour, IMove, IAttack
     private void Update()
     {
         _initialNode.Execute();
-        _myFSMController.OnUpdate();
+        //_myFSMController.OnUpdate();
     }
 
-    public void KillTarget() { } //IATTACK 
+    public void KillTarget() //IATTACK 
+    {
+        print("shooting");
+    } 
 
     public void Move() //IMOVE
     {
@@ -106,7 +119,10 @@ public class PoliceController : MonoBehaviour, IMove, IAttack
         transform.forward = direction;
     } 
 
-    public void PursuitTarget() { } //IATTACK
+    public void PursuitTarget() //IATTACK 
+    {
+        transform.forward = pursuitSteering.GetDirection();
+    } 
 
     public void ReloadAmmo() //IATTACK 
     {
@@ -119,10 +135,12 @@ public class PoliceController : MonoBehaviour, IMove, IAttack
     {
         if(_currentWalkedTime > _walkTimeBeforeIdle)
         {
-            _currentWalkedTime = 0;
             return true;
         }
-        else { return false; }
+        else 
+        {
+            return false; 
+        }
     }
 
     public bool IsTargetInSight() 
@@ -149,15 +167,29 @@ public class PoliceController : MonoBehaviour, IMove, IAttack
         var nextPointPosition = _myPathfindController.AStarResult[nextWayPoint].transform.position;
         Vector3 direction = nextPointPosition - transform.position;
 
-        if(direction.magnitude < smoothnessTurn) 
+        if (direction.magnitude < smoothnessTurn) 
         {
-            if(nextWayPoint + movementOrientation >= _myPathfindController.AStarResult.Count || nextWayPoint + movementOrientation < 0) 
+            if (nextWayPoint < _myPathfindController.AStarResult.Count - 1)
             {
-                movementOrientation *= -1;
+                nextWayPoint += wayPointIncrease;
             }
-            nextWayPoint += movementOrientation;
+            else
+            {
+                nextWayPoint = 0;
+                RandomWithException randomWithException = new RandomWithException(0, nodes.Length, _startNode);
+                var randomEndNode = randomWithException.Randomize();
+                _myPathfindController.EditNodes(nodes[_startNode], nodes[randomEndNode]);
+                _myPathfindController.Execute();
+                _startNode = randomEndNode;
+
+            }
         }
         return direction.normalized;
+    }
+
+    public void DoIdle() //IIdle
+    {
+        StartCoroutine(WaitToRecover());
     }
 
     IEnumerator ReloadingAmmo(float reloadingAmmoTime)
@@ -166,4 +198,11 @@ public class PoliceController : MonoBehaviour, IMove, IAttack
         yield return new WaitForSeconds(reloadingAmmoTime);
         _ammoLeft = _maxAmmo;
     }
+
+    IEnumerator WaitToRecover()
+    {
+        yield return new WaitForSeconds(5);
+        _currentWalkedTime = 0;
+    }
+
 }

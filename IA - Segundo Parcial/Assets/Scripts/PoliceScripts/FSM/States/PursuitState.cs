@@ -12,6 +12,7 @@ public class PursuitState<T> : FSMState<T>
 
     public override void Execute()
     {
+        //Debug.Log("Ejecutando PursuitState - PursuitTarget");
         _chaser.PursuitTarget();
     }
 }

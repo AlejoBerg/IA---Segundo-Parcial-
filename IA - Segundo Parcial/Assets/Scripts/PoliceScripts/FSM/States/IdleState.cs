@@ -4,12 +4,16 @@ using UnityEngine;
 
 public class IdleState<T> : FSMState<T>
 {
-    public override void Awake() 
+    private IIdle _idleEntity;
+
+    public IdleState(IIdle idleEntity)
     {
-        Debug.Log("Awake IdleState");
+        _idleEntity = idleEntity;
     }
+
     public override void Execute() 
     {
-        Debug.Log("Execute IdleState");
+        //Debug.Log("Ejecutando IdleState - DoIdle");
+        _idleEntity.DoIdle();
     }
 }

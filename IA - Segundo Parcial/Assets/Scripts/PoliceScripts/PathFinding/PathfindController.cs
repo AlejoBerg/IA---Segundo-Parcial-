@@ -22,6 +22,12 @@ public class PathfindController
         aStarResult = myAStar.RunPathfinding(initialNode, SatisfiesCondition, GetNeighbour, GetConnectionCost, GetHeuristic, 80);
     }
 
+    public void EditNodes(Node _newInitialNode, Node _newEndNode) 
+    {
+        initialNode = _newInitialNode;
+        endNode = _newEndNode;
+    }
+
     private bool SatisfiesCondition(Node _current)
     {
         return _current == endNode;

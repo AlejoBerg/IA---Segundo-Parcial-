@@ -13,6 +13,7 @@ public class ReloadState<T> : FSMState<T>
 
     public override void Execute()
     {
+        //Debug.Log("Ejecutando ReloadState - ReloadAmmo");
         _recharger.ReloadAmmo();
     }
 }

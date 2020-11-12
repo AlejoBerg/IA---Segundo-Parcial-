@@ -5,8 +5,8 @@ using UnityEngine;
 
 public class LineOfSight : MonoBehaviour
 {
-    [SerializeField] private float _angleOfVision = 0; //Distancia
-    [SerializeField] private float _fieldOfView = 0; //Angulo
+    [SerializeField] private float _fieldOfView = 0; //Distancia
+    [SerializeField] private float _angleOfVision = 0; //Angulo
     [SerializeField] private LayerMask _obstacleMast;
 
     private float _distance = 0;
@@ -16,10 +16,10 @@ public class LineOfSight : MonoBehaviour
         var _diff = target.transform.position - transform.position;
         _distance = _diff.magnitude;
 
-        if (_distance <= _angleOfVision) 
+        if (_distance <= _fieldOfView) 
         {
             var angleToTarget = Vector3.Angle(transform.forward, _diff.normalized); // Uso diff y no distance porque el primero es un vector3, el segundo es solamente un float
-            if(angleToTarget <= _fieldOfView)
+            if(angleToTarget <= _angleOfVision)
             {
                 if(Physics.Raycast(transform.position, _diff.normalized, _distance, _obstacleMast))
                 {
