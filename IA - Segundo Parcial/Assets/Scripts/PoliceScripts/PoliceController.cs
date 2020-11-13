@@ -1,29 +1,33 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle
+public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 {
     [SerializeField] private GameObject _target = null;
+    //[SerializeField] private AudioSource reloadGun;
     private Rigidbody _targetRB = null;
     private float walkSpeed = 2;
     private Rigidbody rb = null;
+    private Animator anim;
+    private float life = 100;
 
     //PathFind
     private int _startNode = 0;
-    private Node[] nodes; //Que tenga todos los nodos
+    [SerializeField] private Node[] nodes; //Que tenga todos los nodos
     [SerializeField] private float smoothnessTurn = 1;
     private PathfindController _myPathfindController;
     private int wayPointIncrease = 1;
     private int nextWayPoint = 0;
 
     //Ammo
-    private float _reloadingAmmoTime = 2;
+    private float _reloadingAmmoTime = 5;
     private const int _maxAmmo = 5;
     private int _ammoLeft = 0;
 
     //IsTargetNear
-    private float _nearDistance = 2f;
+    private float _nearDistance = 5f;
 
     //Walk
     private float _walkTimeBeforeIdle = 5f;
@@ -36,17 +40,12 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle
     //Steering
     private Pursuit pursuitSteering;
 
-    public PoliceController(Node[] _nodes)
-    {
-        for (int i = 0; i < _nodes.Length; i++)
-        {
-            nodes[i] = _nodes[i];
-        }
-    }
+    public event Action OnShoot;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        anim = GetComponent<Animator>();
 
         RandomWithException rndWithException = new RandomWithException(0, nodes.Length, _startNode);
         var randomEndNode = rndWithException.Randomize();
@@ -116,28 +115,55 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle
 
     public void KillTarget() //IATTACK 
     {
-        print("shooting");
+        //print("shooting");
+        anim.SetBool("IsReloading", false);
+        anim.SetBool("IsInSight", true);
+        anim.SetInteger("Speed", 0);
+
+        rb.velocity = Vector3.zero;
+        transform.forward = pursuitSteering.GetDirection() - new Vector3(1,0,0);
+        OnShoot?.Invoke();
+        _ammoLeft -= 1;
     } 
 
     public void Move() //IMOVE
     {
+        anim.SetBool("IsReloading", false);
+        anim.SetBool("IsInSight", false);
+        anim.SetInteger("Speed", 2);
+
         _currentWalkedTime += Time.deltaTime;
         var direction = GetNextPosition();
         rb.velocity = direction * walkSpeed;
-        transform.forward = direction;
+        transform.forward = Vector3.Lerp(transform.forward, direction, 10 * Time.deltaTime);
     } 
 
     public void PursuitTarget() //IATTACK 
     {
-        transform.forward = pursuitSteering.GetDirection();
-    } 
+        anim.SetInteger("Speed", 2);
+        anim.SetBool("IsInSight", false);
+        anim.SetBool("IsReloading", false);
+
+        //print("persiguiendo");
+        rb.velocity = pursuitSteering.GetDirection() * walkSpeed;
+        var direction = pursuitSteering.GetDirection();
+        transform.forward = Vector3.Lerp(transform.forward, direction, 10 * Time.deltaTime);
+    }
 
     public void ReloadAmmo() //IATTACK 
     {
+        anim.SetBool("IsReloading", true);
+
+        rb.velocity = Vector3.zero;
+        var direction = pursuitSteering.GetDirection() - new Vector3(1, 0, 0);
+        transform.forward = Vector3.Lerp(transform.forward, direction, 5 * Time.deltaTime);
         StartCoroutine(ReloadingAmmo(_reloadingAmmoTime));
     } 
 
-    public void Respawn() { }
+    public void Respawn() 
+    {
+        anim.SetBool("IsDeath", false);
+    }
 
     public bool WalkedTime()
     {
@@ -173,6 +199,7 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle
     private Vector3 GetNextPosition()
     {
         var nextPointPosition = _myPathfindController.AStarResult[nextWayPoint].transform.position;
+        nextPointPosition.y = transform.position.y;
         Vector3 direction = nextPointPosition - transform.position;
 
         if (direction.magnitude < smoothnessTurn) 
@@ -197,12 +224,15 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle
 
     public void DoIdle() //IIdle
     {
+        anim.SetBool("IsDeath", false);
+        anim.SetBool("IsInSight", false);
+        anim.SetInteger("Speed", 0);
+
         StartCoroutine(WaitToRecover());
     }
 
     IEnumerator ReloadingAmmo(float reloadingAmmoTime)
     {
-        //Ejecutar animacion
         yield return new WaitForSeconds(reloadingAmmoTime);
         _ammoLeft = _maxAmmo;
     }
@@ -213,4 +243,17 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle
         _currentWalkedTime = 0;
     }
 
+    public void GetDamage(float _damage)
+    {
+        if(life - _damage <= 0)
+        {
+            anim.SetBool("IsDeath", true);
+            life = 100;
+            Respawn();
+        }
+        else
+        {
+            life -= _damage;
+        }
+    }
 }
