@@ -11,7 +11,7 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle
 
     //PathFind
     private int _startNode = 0;
-    [SerializeField] private Node[] nodes; //Que tenga todos los nodos
+    private Node[] nodes; //Que tenga todos los nodos
     [SerializeField] private float smoothnessTurn = 1;
     private PathfindController _myPathfindController;
     private int wayPointIncrease = 1;
@@ -35,6 +35,14 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle
 
     //Steering
     private Pursuit pursuitSteering;
+
+    public PoliceController(Node[] _nodes)
+    {
+        for (int i = 0; i < _nodes.Length; i++)
+        {
+            nodes[i] = _nodes[i];
+        }
+    }
 
     private void Awake()
     {
