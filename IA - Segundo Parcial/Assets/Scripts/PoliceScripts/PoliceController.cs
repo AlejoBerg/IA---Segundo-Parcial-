@@ -6,10 +6,11 @@ using UnityEngine;
 public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 {
     [SerializeField] private GameObject _target = null;
-    [SerializeField] private AudioSource reloadGun;
+    //[SerializeField] private AudioSource reloadGun;
     private Rigidbody _targetRB = null;
     private float walkSpeed = 2;
     private Rigidbody rb = null;
+    private Animator anim;
     private float life = 100;
 
     //PathFind
@@ -26,7 +27,7 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     private int _ammoLeft = 0;
 
     //IsTargetNear
-    private float _nearDistance = 4f;
+    private float _nearDistance = 5f;
 
     //Walk
     private float _walkTimeBeforeIdle = 5f;
@@ -44,6 +45,7 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        anim = GetComponent<Animator>();
 
         RandomWithException rndWithException = new RandomWithException(0, nodes.Length, _startNode);
         var randomEndNode = rndWithException.Randomize();
@@ -113,38 +115,55 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     public void KillTarget() //IATTACK 
     {
-        print("shooting");
+        //print("shooting");
+        anim.SetBool("IsReloading", false);
+        anim.SetBool("IsInSight", true);
+        anim.SetInteger("Speed", 0);
+
         rb.velocity = Vector3.zero;
-        transform.forward = pursuitSteering.GetDirection();
+        transform.forward = pursuitSteering.GetDirection() - new Vector3(1,0,0);
         OnShoot?.Invoke();
         _ammoLeft -= 1;
     } 
 
     public void Move() //IMOVE
     {
+        anim.SetBool("IsReloading", false);
+        anim.SetBool("IsInSight", false);
+        anim.SetInteger("Speed", 2);
+
         _currentWalkedTime += Time.deltaTime;
         var direction = GetNextPosition();
         rb.velocity = direction * walkSpeed;
-        transform.forward = direction;
+        transform.forward = Vector3.Lerp(transform.forward, direction, 10 * Time.deltaTime);
     } 
 
     public void PursuitTarget() //IATTACK 
     {
-        print("persiguiendo");
+        anim.SetInteger("Speed", 2);
+        anim.SetBool("IsInSight", false);
+        anim.SetBool("IsReloading", false);
+
+        //print("persiguiendo");
         rb.velocity = pursuitSteering.GetDirection() * walkSpeed;
-        transform.forward = pursuitSteering.GetDirection();
-    } 
+        var direction = pursuitSteering.GetDirection();
+        transform.forward = Vector3.Lerp(transform.forward, direction, 10 * Time.deltaTime);
+    }
 
     public void ReloadAmmo() //IATTACK 
     {
-        print("reloading ammo");
+        anim.SetBool("IsReloading", true);
+
         rb.velocity = Vector3.zero;
-        transform.forward = pursuitSteering.GetDirection();
-        reloadGun.Play();
+        var direction = pursuitSteering.GetDirection() - new Vector3(1, 0, 0);
+        transform.forward = Vector3.Lerp(transform.forward, direction, 5 * Time.deltaTime);
         StartCoroutine(ReloadingAmmo(_reloadingAmmoTime));
     } 
 
-    public void Respawn() { }
+    public void Respawn() 
+    {
+        anim.SetBool("IsDeath", false);
+    }
 
     public bool WalkedTime()
     {
@@ -180,6 +199,7 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     private Vector3 GetNextPosition()
     {
         var nextPointPosition = _myPathfindController.AStarResult[nextWayPoint].transform.position;
+        nextPointPosition.y = transform.position.y;
         Vector3 direction = nextPointPosition - transform.position;
 
         if (direction.magnitude < smoothnessTurn) 
@@ -204,6 +224,10 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     public void DoIdle() //IIdle
     {
+        anim.SetBool("IsDeath", false);
+        anim.SetBool("IsInSight", false);
+        anim.SetInteger("Speed", 0);
+
         StartCoroutine(WaitToRecover());
     }
 
@@ -223,6 +247,7 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     {
         if(life - _damage <= 0)
         {
+            anim.SetBool("IsDeath", true);
             life = 100;
             Respawn();
         }
