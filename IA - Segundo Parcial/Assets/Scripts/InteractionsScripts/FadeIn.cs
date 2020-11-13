@@ -6,11 +6,12 @@ using UnityEngine;
 public class FadeIn : MonoBehaviour
 {
     [SerializeField] private GameObject itemToFade;
-    //private bool doFade = false;
     
     private void Awake()
     {
         StartCoroutine(DoFade());
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
     }
 
     IEnumerator DoFade()
