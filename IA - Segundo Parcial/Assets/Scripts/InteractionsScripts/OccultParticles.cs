@@ -36,11 +36,12 @@ public class OccultParticles : MonoBehaviour
             money[i].SetActive(false);
             GameManager.AddPoints(500);
             stop = true;
+            yield return new  WaitForSeconds(0.6f);
+            
             if (i == 16)
             {
                 textToDisplay.GetComponent<TextFader>().Fade();
             }
-            yield return new  WaitForSeconds(0.6f);
         }
         yield return null;
     }
