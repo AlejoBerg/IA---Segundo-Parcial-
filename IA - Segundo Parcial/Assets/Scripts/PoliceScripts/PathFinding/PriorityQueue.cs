@@ -28,6 +28,11 @@ public class PriorityQueue<TData>
         Enqueue(new Tuple<TData, float>(data, priority));
     }
 
+    public int Count()
+    {
+        return data.Count;
+    }
+
     public void Enqueue(Tuple<TData, float> dp)
     {
         int currentIndex;

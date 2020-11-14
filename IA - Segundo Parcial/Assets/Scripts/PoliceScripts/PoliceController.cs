@@ -8,7 +8,7 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     [SerializeField] private GameObject _target = null;
     //[SerializeField] private AudioSource reloadGun;
     private Rigidbody _targetRB = null;
-    private float walkSpeed = 1.1f;
+    private float walkSpeed = 2f; //1.1f
     private Rigidbody rb = null;
     private Animator anim;
     private float life = 100;
@@ -51,6 +51,7 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
         RandomWithException rndWithException = new RandomWithException(0, nodes.Length, _startNode);
         var randomEndNode = rndWithException.Randomize();
+        print($"RandomEndNodeInicial = {randomEndNode} equivale a {nodes[randomEndNode]} ; CurrentNode = {nodes[_startNode]}");
         _myPathfindController = new PathfindController(nodes[_startNode], nodes[randomEndNode]);
         _myPathfindController.Execute();
         _startNode = randomEndNode;
@@ -198,8 +199,9 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         return _lineOfSigh.GetDistanceToTarget(_nearDistance);
     }
 
-    private Vector3 GetNextPosition()
+    private Vector3 GetNextPosition() //aca
     {
+        //print("GetNextPosition: nextWayPoint = " + nextWayPoint);
         var nextPointPosition = _myPathfindController.AStarResult[nextWayPoint].transform.position;
         nextPointPosition.y = transform.position.y;
         Vector3 direction = nextPointPosition - transform.position;
@@ -209,12 +211,14 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
             if (nextWayPoint < _myPathfindController.AStarResult.Count - 1)
             {
                 nextWayPoint += wayPointIncrease;
+                print("nextWayPointIncreased = " + nextWayPoint);
             }
             else
             {
                 nextWayPoint = 0;
                 RandomWithException randomWithException = new RandomWithException(0, nodes.Length, _startNode);
                 var randomEndNode = randomWithException.Randomize();
+                print($"RandomEndNode = {randomEndNode} equivale a {nodes[randomEndNode]} ; CurrentNode = {nodes[_startNode]}");
                 _myPathfindController.EditNodes(nodes[_startNode], nodes[randomEndNode]);
                 _myPathfindController.Execute();
                 _startNode = randomEndNode;
