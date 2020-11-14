@@ -8,14 +8,14 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     [SerializeField] private GameObject _target = null;
     //[SerializeField] private AudioSource reloadGun;
     private Rigidbody _targetRB = null;
-    private float walkSpeed = 2;
+    private float walkSpeed = 1.1f;
     private Rigidbody rb = null;
     private Animator anim;
     private float life = 100;
 
     //PathFind
     private int _startNode = 0;
-    [SerializeField] private Node[] nodes; //Que tenga todos los nodos
+    private Node[] nodes; //Que tenga todos los nodos
     [SerializeField] private float smoothnessTurn = 1;
     private PathfindController _myPathfindController;
     private int wayPointIncrease = 1;
@@ -42,10 +42,12 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     public event Action OnShoot;
 
-    private void Awake()
+    private void Start()
     {
         rb = GetComponent<Rigidbody>();
         anim = GetComponent<Animator>();
+
+        nodes = NodesManager.Instance.GetNodes();
 
         RandomWithException rndWithException = new RandomWithException(0, nodes.Length, _startNode);
         var randomEndNode = rndWithException.Randomize();
