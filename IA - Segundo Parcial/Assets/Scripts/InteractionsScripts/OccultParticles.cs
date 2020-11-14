@@ -24,7 +24,6 @@ public class OccultParticles : MonoBehaviour
             particles.SetActive(false);
             scoreDisplay.GetComponent<TextFader>().Fade();
             textToDisplay.GetComponent<TextFader>().Fade();
-            audio.Stop();
         }
     }
     
@@ -33,7 +32,6 @@ public class OccultParticles : MonoBehaviour
         if (other.gameObject.tag.Equals("Player"))
         {
             StartCoroutine(CollectMoney());
-           
         }
     }
 
@@ -43,14 +41,14 @@ public class OccultParticles : MonoBehaviour
         {
             if(!stop){scoreDisplay.GetComponent<TextFader>().Fade();}
             money[i].SetActive(false);
-            GameManager.AddPoints(500);
+            GameManager.AddPoints(1000);
             stop = true;
             if (i == 16)
             {
                 textToDisplay.GetComponent<TextFader>().Fade();
+                audio.Play();
             }
             yield return new  WaitForSeconds(0.6f);
-            audio.Play();
         }
         yield return null;
     }

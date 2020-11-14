@@ -9,6 +9,12 @@ public class OpenDoors : MonoBehaviour
     [SerializeField] private GameObject door2;
     [SerializeField] private GameObject particles;
     private bool canOpenDoors = false;
+    [SerializeField] private AudioSource audio;
+    
+    private void Awake()
+    {
+        audio = GetComponent<AudioSource>();
+    }
 
     private void Update()
     {
@@ -22,6 +28,7 @@ public class OpenDoors : MonoBehaviour
     {
         if (other.gameObject.tag.Equals("Player"))
         {
+            audio.Play();
             canOpenDoors = true;
         }
     }
