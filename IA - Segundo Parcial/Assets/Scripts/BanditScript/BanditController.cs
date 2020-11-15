@@ -11,7 +11,9 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     private float walkSpeed = 2f; //1.1f
     private Rigidbody rb = null;
     private Animator anim;
-    private float life = 1000;
+    private Roulette _roulette;
+    private Dictionary<float, int> _dic;
+    private float life;
 
     //PathFind
     private int _startNode = 0;
@@ -41,6 +43,17 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     private Pursuit pursuitSteering;
 
     public event Action OnShoot;
+
+    private void Awake()
+    {
+        _roulette = new Roulette();
+        _dic = new Dictionary<float, int>();
+        _dic.Add(1000, 75);
+        _dic.Add(1250, 50);
+        _dic.Add(1500, 20);        
+        TypeOfDamage();
+        Debug.Log(life + "mi vida es");
+    }
 
     private void Start()
     {
@@ -107,7 +120,8 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         QuestionNode amIExhausted = new QuestionNode(WalkedTime, idle, walk);
         QuestionNode isInSight = new QuestionNode(IsTargetInSight, isTargetNear, amIExhausted);
 
-        _initialNode = isInSight;
+        _initialNode = isInSight;       
+
     }
 
     private void Update()
@@ -246,6 +260,13 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         StartCoroutine(WaitToRecover());
     }
 
+    void TypeOfDamage()
+    {
+        life = _roulette.Run(_dic);
+        Debug.Log(_roulette.Run(_dic));
+    }
+
+
     IEnumerator ReloadingAmmo(float reloadingAmmoTime)
     {
         yield return new WaitForSeconds(reloadingAmmoTime);
@@ -262,9 +283,8 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     {
         if (life - _damage <= 0)
         {
-            anim.SetBool("IsDeath", true);
-            life = 100;
-            Respawn();
+            anim.SetBool("IsDeath", true);            
+            Destroy(gameObject);
         }
         else
         {
