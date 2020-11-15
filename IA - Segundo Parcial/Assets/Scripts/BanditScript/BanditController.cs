@@ -7,13 +7,16 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 {
     [SerializeField] private GameObject _target = null;
     //[SerializeField] private AudioSource reloadGun;
+    [SerializeField] private GameObject _player;
     private Rigidbody _targetRB = null;
-    private float walkSpeed = 2f; //1.1f
+    private float walkSpeed = 1.5f; //1.1f
     private Rigidbody rb = null;
     private Animator anim;
     private Roulette _roulette;
     private Dictionary<float, int> _dic;
     private float life;
+    [SerializeField] private Vector3 offset = Vector3.zero; 
+    
 
     //PathFind
     private int _startNode = 0;
@@ -29,15 +32,14 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     private int _ammoLeft = 0;
 
     //IsTargetNear
-    private float _nearDistance = 5f;
-
-    //Walk
-    private float _walkTimeBeforeIdle = 5f;
-    private float _currentWalkedTime = 0;
+    private float _nearDistance = 8f;    
 
     private FSMController<string> _myFSMController;
     private LineOfSight _lineOfSigh = null;
     private INode _initialNode;
+
+    //ObstacleAvoidance
+    private ObstacleAvoidance _obstacleAvoidance;
 
     //Steering
     private Pursuit pursuitSteering;
@@ -46,13 +48,16 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     private void Awake()
     {
+        transform.position = _player.transform.position + offset;
+        transform.rotation = _player.transform.rotation;
+
         _roulette = new Roulette();
         _dic = new Dictionary<float, int>();
         _dic.Add(1000, 75);
         _dic.Add(1250, 50);
         _dic.Add(1500, 20);        
         TypeOfDamage();
-        Debug.Log(life + "mi vida es");
+       // Debug.Log(life + "mi vida es");
     }
 
     private void Start()
@@ -60,20 +65,21 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         rb = GetComponent<Rigidbody>();
         anim = GetComponent<Animator>();
 
-        nodes = NodesManager.Instance.GetNodes();
+        //nodes = NodesManager.Instance.GetNodes();
 
-        RandomWithException rndWithException = new RandomWithException(0, nodes.Length, _startNode);
-        var randomEndNode = rndWithException.Randomize();
+        //RandomWithException rndWithException = new RandomWithException(0, nodes.Length, _startNode);
+        //var randomEndNode = rndWithException.Randomize();
         //print($"RandomEndNodeInicial = {randomEndNode} equivale a {nodes[randomEndNode]} ; CurrentNode = {nodes[_startNode]}");
-        _myPathfindController = new PathfindController(nodes[_startNode], nodes[randomEndNode]);
-        _myPathfindController.Execute();
-        _startNode = randomEndNode;
+        //_myPathfindController = new PathfindController(nodes[_startNode], nodes[randomEndNode]);
+        //_myPathfindController.Execute();
+        //_startNode = randomEndNode;
 
         _ammoLeft = _maxAmmo;
         _lineOfSigh = GetComponent<LineOfSight>();
 
+
         //Steerings
-        //_targetRB = _target.GetComponent<Rigidbody>();
+        _obstacleAvoidance = GetComponent<ObstacleAvoidance>();
         pursuitSteering = new Pursuit(this.transform, 2);
 
         //FSM
@@ -114,11 +120,13 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
         //TREE
         ActionNode respawn = new ActionNode(Respawn);
+        ActionNode evade = new ActionNode(EvadeObstacle);
 
         QuestionNode haveAmmo = new QuestionNode(CheckAmmoLeft, kill, reloadAmmo);
         QuestionNode isTargetNear = new QuestionNode(IsTargetNear, haveAmmo, pursuit);
-        QuestionNode amIExhausted = new QuestionNode(WalkedTime, idle, walk);
-        QuestionNode isInSight = new QuestionNode(IsTargetInSight, isTargetNear, amIExhausted);
+        QuestionNode isPlayerMoving = new QuestionNode(PlayerVelocity, walk, idle);
+        QuestionNode isInSight = new QuestionNode(IsTargetInSight, isTargetNear, isPlayerMoving);
+        QuestionNode isObstacleNear = new QuestionNode(IsObstacleNear, evade, isInSight);
 
         _initialNode = isInSight;       
 
@@ -152,8 +160,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         anim.SetBool("IsReloading", false);
         anim.SetBool("IsInSight", false);
         anim.SetInteger("Speed", 2);
-
-        _currentWalkedTime += Time.deltaTime;
+        
         var direction = GetNextPosition();
         rb.velocity = direction * walkSpeed;
         transform.forward = Vector3.Lerp(transform.forward, direction, 10 * Time.deltaTime);
@@ -189,9 +196,10 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         anim.SetBool("IsDeath", false);
     }
 
-    public bool WalkedTime()
+    public bool PlayerVelocity()
     {
-        if (_currentWalkedTime > _walkTimeBeforeIdle)
+        var playerRbRef = _player.GetComponent<Rigidbody>();
+        if (playerRbRef.velocity.magnitude > 0)
         {
             return true;
         }
@@ -203,8 +211,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     public bool IsTargetInSight()
     {
-        print(_lineOfSigh.IsTargetInSight(GameManager.Instance.bandides));
-        return _lineOfSigh.IsTargetInSight(GameManager.Instance.bandides);
+        return _lineOfSigh.IsTargetInSight(GameManager.Instance.cops);
     }
 
     public bool CheckAmmoLeft()
@@ -222,32 +229,18 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         return _lineOfSigh.GetDistanceToTarget(_nearDistance);
     }
 
+    public bool IsObstacleNear()
+    {
+        print (_obstacleAvoidance.IsObstacleNear());
+        return _obstacleAvoidance.IsObstacleNear();        
+    }
+
     private Vector3 GetNextPosition() //aca
     {
         //print("GetNextPosition: nextWayPoint = " + nextWayPoint);
-        var nextPointPosition = _myPathfindController.AStarResult[nextWayPoint].transform.position;
+        var nextPointPosition = _player.transform.position + offset;
         nextPointPosition.y = transform.position.y;
-        Vector3 direction = nextPointPosition - transform.position;
-
-        if (direction.magnitude < smoothnessTurn)
-        {
-            if (nextWayPoint < _myPathfindController.AStarResult.Count - 1)
-            {
-                nextWayPoint += wayPointIncrease;
-                //print("nextWayPointIncreased = " + nextWayPoint);
-            }
-            else
-            {
-                nextWayPoint = 0;
-                RandomWithException randomWithException = new RandomWithException(0, nodes.Length, _startNode);
-                var randomEndNode = randomWithException.Randomize();
-                //print($"RandomEndNode = {randomEndNode} equivale a {nodes[randomEndNode]} ; CurrentNode = {nodes[_startNode]}");
-                _myPathfindController.EditNodes(nodes[_startNode], nodes[randomEndNode]);
-                _myPathfindController.Execute();
-                _startNode = randomEndNode;
-
-            }
-        }
+        Vector3 direction = nextPointPosition - transform.position;       
         return direction.normalized;
     }
 
@@ -255,9 +248,13 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     {
         anim.SetBool("IsDeath", false);
         anim.SetBool("IsInSight", false);
-        anim.SetInteger("Speed", 0);
+        anim.SetInteger("Speed", 0);       
+    }
 
-        StartCoroutine(WaitToRecover());
+    public void EvadeObstacle()
+    {
+        print("evadiendo obstaculo");
+        transform.position = _obstacleAvoidance.RunObstacleAvoidance(); 
     }
 
     void TypeOfDamage()
@@ -272,12 +269,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         yield return new WaitForSeconds(reloadingAmmoTime);
         _ammoLeft = _maxAmmo;
     }
-
-    IEnumerator WaitToRecover()
-    {
-        yield return new WaitForSeconds(5);
-        _currentWalkedTime = 0;
-    }
+   
 
     public void GetDamage(float _damage)
     {

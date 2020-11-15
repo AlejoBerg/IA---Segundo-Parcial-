@@ -12,7 +12,8 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     public List<GameObject> bandides = new List<GameObject>();
-    
+    public List<GameObject> cops = new List<GameObject>();
+
     public static int Score => score;
 
 

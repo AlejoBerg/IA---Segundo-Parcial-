@@ -5,21 +5,27 @@ using UnityEngine;
 public class ObstacleAvoidance : MonoBehaviour
 {
     [SerializeField]
-    private float targetVelocity = 10f;
+    private float targetVelocity = 1.5f;
     private int numberOfRays = 17;
     private float angle = 90;
-
     public float rayRange = 2;
+    public Transform player;
+    [SerializeField] private LayerMask _obstacleLayer;
+    
 
-
-    // Start is called before the first frame update
-    void Start()
+    public bool IsObstacleNear(float _minDistance = 2)
     {
-        
+        if (Physics.Raycast(transform.position, transform.forward, _minDistance, _obstacleLayer))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    public Vector3 RunObstacleAvoidance()
     {
         var deltaPosition = Vector3.zero;
         for (int i = 0; i < numberOfRays; i++)
@@ -27,22 +33,24 @@ public class ObstacleAvoidance : MonoBehaviour
             var rotation = this.transform.rotation;
             var rotationMod = Quaternion.AngleAxis((i / ((float)numberOfRays - 1)) * angle * 2 - angle, this.transform.up);
             var direction = rotation * rotationMod * Vector3.forward;
-           
+
             var ray = new Ray(this.transform.position, direction);
             RaycastHit hitInfo;
             if (Physics.Raycast(ray, out hitInfo, rayRange))
             {
-                deltaPosition -= (1.0f / numberOfRays) * targetVelocity * direction;
+                deltaPosition -= (1.0f / numberOfRays) * direction;
             }
             else
             {
-                deltaPosition += (1.0f / numberOfRays) * targetVelocity * direction;
+                deltaPosition += (1.0f / numberOfRays) * direction;
             }
 
-            this.transform.position += deltaPosition * Time.deltaTime;
+            var newPos = this.transform.position + deltaPosition * Time.deltaTime;
+            return newPos;
         }
-    }
 
+        return Vector3.zero;
+    }
     private void OnDrawGizmos()
     {
         for (int i = 0; i < numberOfRays; i++) 
