@@ -42,6 +42,7 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     public event Action OnShoot;
 
+
     private void Start()
     {
         rb = GetComponent<Rigidbody>();

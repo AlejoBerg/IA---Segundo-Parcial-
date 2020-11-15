@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 {
-    [SerializeField] private GameObject _target = null;
+    //[SerializeField] private GameObject _target = null;
     //[SerializeField] private AudioSource reloadGun;
     [SerializeField] private GameObject _player;
     private Rigidbody _targetRB = null;
@@ -15,16 +15,9 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     private Roulette _roulette;
     private Dictionary<float, int> _dic;
     private float life;
-    [SerializeField] private Vector3 offset = Vector3.zero; 
-    
+    [SerializeField] private Vector3 offset = Vector3.zero;     
 
-    //PathFind
-    private int _startNode = 0;
-    private Node[] nodes; //Que tenga todos los nodos
-    [SerializeField] private float smoothnessTurn = 1;
-    private PathfindController _myPathfindController;
-    private int wayPointIncrease = 1;
-    private int nextWayPoint = 0;
+   
 
     //Ammo
     private float _reloadingAmmoTime = 5;
@@ -39,7 +32,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     private INode _initialNode;
 
     //ObstacleAvoidance
-    private ObstacleAvoidance _obstacleAvoidance;
+    private ObstacleAvoidance2 _obstacleAvoidance;
 
     //Steering
     private Pursuit pursuitSteering;
@@ -48,8 +41,10 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     private void Awake()
     {
+        GameManager.Instance.bandides.Add(this.gameObject);
+
         transform.position = _player.transform.position + offset;
-        transform.rotation = _player.transform.rotation;
+        transform.rotation = _player.transform.rotation;       
 
         _roulette = new Roulette();
         _dic = new Dictionary<float, int>();
@@ -57,29 +52,21 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         _dic.Add(1250, 50);
         _dic.Add(1500, 20);        
         TypeOfDamage();
-       // Debug.Log(life + "mi vida es");
+        Debug.Log(life + "mi vida es");
     }
 
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         anim = GetComponent<Animator>();
-
-        //nodes = NodesManager.Instance.GetNodes();
-
-        //RandomWithException rndWithException = new RandomWithException(0, nodes.Length, _startNode);
-        //var randomEndNode = rndWithException.Randomize();
-        //print($"RandomEndNodeInicial = {randomEndNode} equivale a {nodes[randomEndNode]} ; CurrentNode = {nodes[_startNode]}");
-        //_myPathfindController = new PathfindController(nodes[_startNode], nodes[randomEndNode]);
-        //_myPathfindController.Execute();
-        //_startNode = randomEndNode;
+        
 
         _ammoLeft = _maxAmmo;
         _lineOfSigh = GetComponent<LineOfSight>();
 
 
         //Steerings
-        _obstacleAvoidance = GetComponent<ObstacleAvoidance>();
+        _obstacleAvoidance = GetComponent<ObstacleAvoidance2>();
         pursuitSteering = new Pursuit(this.transform, 2);
 
         //FSM
@@ -119,14 +106,12 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         _myFSMController.SetInitialState(idle);
 
         //TREE
-        ActionNode respawn = new ActionNode(Respawn);
-        ActionNode evade = new ActionNode(EvadeObstacle);
+        ActionNode dead = new ActionNode(Dead);        
 
         QuestionNode haveAmmo = new QuestionNode(CheckAmmoLeft, kill, reloadAmmo);
         QuestionNode isTargetNear = new QuestionNode(IsTargetNear, haveAmmo, pursuit);
         QuestionNode isPlayerMoving = new QuestionNode(PlayerVelocity, walk, idle);
         QuestionNode isInSight = new QuestionNode(IsTargetInSight, isTargetNear, isPlayerMoving);
-        QuestionNode isObstacleNear = new QuestionNode(IsObstacleNear, evade, isInSight);
 
         _initialNode = isInSight;       
 
@@ -160,8 +145,9 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         anim.SetBool("IsReloading", false);
         anim.SetBool("IsInSight", false);
         anim.SetInteger("Speed", 2);
-        
-        var direction = GetNextPosition();
+
+        var direction = _obstacleAvoidance.GetDir();        
+        direction.y = 0;
         rb.velocity = direction * walkSpeed;
         transform.forward = Vector3.Lerp(transform.forward, direction, 10 * Time.deltaTime);
     }
@@ -191,7 +177,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         StartCoroutine(ReloadingAmmo(_reloadingAmmoTime));
     }
 
-    public void Respawn()
+    public void Dead()
     {
         anim.SetBool("IsDeath", false);
     }
@@ -225,37 +211,15 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     public bool IsTargetNear()
     {
-        print(_lineOfSigh.GetDistanceToTarget(_nearDistance));
-        return _lineOfSigh.GetDistanceToTarget(_nearDistance);
-    }
-
-    public bool IsObstacleNear()
-    {
-        print (_obstacleAvoidance.IsObstacleNear());
-        return _obstacleAvoidance.IsObstacleNear();        
-    }
-
-    private Vector3 GetNextPosition() //aca
-    {
-        //print("GetNextPosition: nextWayPoint = " + nextWayPoint);
-        var nextPointPosition = _player.transform.position + offset;
-        nextPointPosition.y = transform.position.y;
-        Vector3 direction = nextPointPosition - transform.position;       
-        return direction.normalized;
-    }
+      return _lineOfSigh.GetDistanceToTarget(_nearDistance);
+    }       
 
     public void DoIdle() //IIdle
     {
         anim.SetBool("IsDeath", false);
         anim.SetBool("IsInSight", false);
         anim.SetInteger("Speed", 0);       
-    }
-
-    public void EvadeObstacle()
-    {
-        print("evadiendo obstaculo");
-        transform.position = _obstacleAvoidance.RunObstacleAvoidance(); 
-    }
+    }   
 
     void TypeOfDamage()
     {
@@ -275,8 +239,8 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     {
         if (life - _damage <= 0)
         {
-            anim.SetBool("IsDeath", true);            
-            Destroy(gameObject);
+            anim.SetBool("IsDeath", true);
+            Dead();
         }
         else
         {
