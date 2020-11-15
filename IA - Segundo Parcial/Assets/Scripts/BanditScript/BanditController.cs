@@ -51,7 +51,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
         RandomWithException rndWithException = new RandomWithException(0, nodes.Length, _startNode);
         var randomEndNode = rndWithException.Randomize();
-        print($"RandomEndNodeInicial = {randomEndNode} equivale a {nodes[randomEndNode]} ; CurrentNode = {nodes[_startNode]}");
+        //print($"RandomEndNodeInicial = {randomEndNode} equivale a {nodes[randomEndNode]} ; CurrentNode = {nodes[_startNode]}");
         _myPathfindController = new PathfindController(nodes[_startNode], nodes[randomEndNode]);
         _myPathfindController.Execute();
         _startNode = randomEndNode;
@@ -60,8 +60,8 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         _lineOfSigh = GetComponent<LineOfSight>();
 
         //Steerings
-        _targetRB = _target.GetComponent<Rigidbody>();
-        pursuitSteering = new Pursuit(_target.transform, this.transform, _targetRB, 2);
+        //_targetRB = _target.GetComponent<Rigidbody>();
+        pursuitSteering = new Pursuit(this.transform, 2);
 
         //FSM
         _myFSMController = new FSMController<string>();
@@ -124,7 +124,11 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         anim.SetInteger("Speed", 0);
 
         rb.velocity = Vector3.zero;
-        transform.forward = pursuitSteering.GetDirection() - new Vector3(1, 0, 0);
+        var targ = _lineOfSigh.GetTargetReference();
+        print(targ);
+        var direction = pursuitSteering.GetDirection(targ);
+        direction.y = transform.forward.y;
+        transform.forward = direction - new Vector3(1, 0, 0);
         OnShoot?.Invoke();
         _ammoLeft -= 1;
     }
@@ -148,8 +152,9 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         anim.SetBool("IsReloading", false);
 
         //print("persiguiendo");
-        rb.velocity = pursuitSteering.GetDirection() * walkSpeed;
-        var direction = pursuitSteering.GetDirection();
+        var targ = _lineOfSigh.GetTargetReference();
+        rb.velocity = pursuitSteering.GetDirection(targ) * walkSpeed;
+        var direction = pursuitSteering.GetDirection(targ);
         transform.forward = Vector3.Lerp(transform.forward, direction, 10 * Time.deltaTime);
     }
 
@@ -158,7 +163,9 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         anim.SetBool("IsReloading", true);
 
         rb.velocity = Vector3.zero;
-        var direction = pursuitSteering.GetDirection() - new Vector3(1, 0, 0);
+        var targ = _lineOfSigh.GetTargetReference();
+        var direction = pursuitSteering.GetDirection(targ) - new Vector3(1, 0, 0);
+        direction.y = transform.forward.y;
         transform.forward = Vector3.Lerp(transform.forward, direction, 5 * Time.deltaTime);
         StartCoroutine(ReloadingAmmo(_reloadingAmmoTime));
     }
@@ -182,7 +189,8 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     public bool IsTargetInSight()
     {
-        return _lineOfSigh.IsTargetInSight(_target);
+        print(_lineOfSigh.IsTargetInSight(GameManager.Instance.bandides));
+        return _lineOfSigh.IsTargetInSight(GameManager.Instance.bandides);
     }
 
     public bool CheckAmmoLeft()
@@ -196,6 +204,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     public bool IsTargetNear()
     {
+        print(_lineOfSigh.GetDistanceToTarget(_nearDistance));
         return _lineOfSigh.GetDistanceToTarget(_nearDistance);
     }
 
@@ -211,14 +220,14 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
             if (nextWayPoint < _myPathfindController.AStarResult.Count - 1)
             {
                 nextWayPoint += wayPointIncrease;
-                print("nextWayPointIncreased = " + nextWayPoint);
+                //print("nextWayPointIncreased = " + nextWayPoint);
             }
             else
             {
                 nextWayPoint = 0;
                 RandomWithException randomWithException = new RandomWithException(0, nodes.Length, _startNode);
                 var randomEndNode = randomWithException.Randomize();
-                print($"RandomEndNode = {randomEndNode} equivale a {nodes[randomEndNode]} ; CurrentNode = {nodes[_startNode]}");
+                //print($"RandomEndNode = {randomEndNode} equivale a {nodes[randomEndNode]} ; CurrentNode = {nodes[_startNode]}");
                 _myPathfindController.EditNodes(nodes[_startNode], nodes[randomEndNode]);
                 _myPathfindController.Execute();
                 _startNode = randomEndNode;
