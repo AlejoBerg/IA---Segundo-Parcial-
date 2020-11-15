@@ -38,7 +38,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     private void Start()
     {
         GameManager.Instance.bandides.Add(this.gameObject);
-        print("me agrego a la lista de bandidos");
+        //print("me agrego a la lista de bandidos");
 
         transform.position = _player.transform.position + offset;
         transform.rotation = _player.transform.rotation;
@@ -130,7 +130,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         //print(targ);
         var direction = pursuitSteering.GetDirection(targ);
         direction.y = transform.forward.y;
-        transform.forward = direction - new Vector3(1, 0, 0);
+        transform.forward = direction - new Vector3(-1, 0, 0);
         OnShoot?.Invoke();
         _ammoLeft -= 1;
     }
@@ -140,7 +140,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         anim.SetBool("IsReloading", false);
         anim.SetBool("IsInSight", false);
         anim.SetInteger("Speed", 2);
-        print("bandido moviendose");
+        //print("bandido moviendose");
 
         var direction = _obstacleAvoidance.GetDir();        
         direction.y = 0;
@@ -155,7 +155,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         anim.SetBool("IsReloading", false);
 
         //print("persiguiendo");
-        print("bandido persiguiendo");
+        //print("bandido persiguiendo");
 
         var targ = _lineOfSigh.GetTargetReference();
         rb.velocity = pursuitSteering.GetDirection(targ) * walkSpeed;
@@ -166,11 +166,11 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     public void ReloadAmmo() //IATTACK 
     {
         anim.SetBool("IsReloading", true);
-        print("bandido recargando");
+        //print("bandido recargando");
 
         rb.velocity = Vector3.zero;
         var targ = _lineOfSigh.GetTargetReference();
-        var direction = pursuitSteering.GetDirection(targ) - new Vector3(1, 0, 0);
+        var direction = pursuitSteering.GetDirection(targ) - new Vector3(-1, 0, 0);
         direction.y = transform.forward.y;
         transform.forward = Vector3.Lerp(transform.forward, direction, 5 * Time.deltaTime);
         StartCoroutine(ReloadingAmmo(_reloadingAmmoTime));
@@ -184,7 +184,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     public bool PlayerVelocity()
     {
         var playerRbRef = _player.GetComponent<Rigidbody>();
-        if (playerRbRef.velocity.magnitude > 0)
+        if (playerRbRef.velocity.magnitude > 1)
         {
             return true;
         }
@@ -196,7 +196,6 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     public bool IsTargetInSight()
     {
-        print("estoy viendo a un policia");
         return _lineOfSigh.IsTargetInSight(GameManager.Instance.cops);
     }
 
@@ -211,7 +210,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     public bool IsTargetNear()
     {
-      return _lineOfSigh.GetDistanceToTarget(_nearDistance);
+        return _lineOfSigh.GetDistanceToTarget(_nearDistance);
     }       
 
     public void DoIdle() //IIdle
@@ -224,7 +223,6 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     void TypeOfDamage()
     {
         life = _roulette.Run(_dic);
-        //////Debug.Log(_roulette.Run(_dic));
     }
 
 
@@ -240,11 +238,13 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         if (life - _damage <= 0)
         {
             anim.SetBool("IsDeath", true);
+            print("bandido se muere");
             Dead();
         }
         else
         {
             life -= _damage;
+            print("le sacan vida a bandido, ahora es " + life);
         }
     }
 }

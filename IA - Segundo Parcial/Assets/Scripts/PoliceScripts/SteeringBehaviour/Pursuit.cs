@@ -19,8 +19,8 @@ public class Pursuit : ISteering
 
     public Vector3 GetDirection(GameObject target)
     {
-        Debug.Log("lista de bandidos.count =  " + GameManager.Instance.bandides.Count);
-        Debug.Log("lista de policias.count =  " + GameManager.Instance.cops.Count);
+        //Debug.Log("lista de bandidos.count =  " + GameManager.Instance.bandides.Count);
+        //Debug.Log("lista de policias.count =  " + GameManager.Instance.cops.Count);
         var targetRB = target.GetComponent<Rigidbody>();
         var targetTransform = target.GetComponent<Transform>();
         var targetSpeed = targetRB.velocity.magnitude;

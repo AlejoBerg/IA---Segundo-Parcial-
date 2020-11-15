@@ -1913,7 +1913,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44be074d3b79d70498ee5fe862e62066, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gunDamage: 1
+  gunDamage: 80
   fireRate: 1
   weaponRange: 50
   hitForce: 100

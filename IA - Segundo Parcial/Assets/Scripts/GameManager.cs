@@ -14,14 +14,15 @@ public class GameManager : MonoBehaviour
     public List<GameObject> bandides = new List<GameObject>();
     public List<GameObject> cops = new List<GameObject>();
 
-    public static int Score => score;
+    public static event Action OnDead;
+    public event Action OnWin;
 
+    public static int Score => score;
 
     private void Awake()
     {
         Instance = this;
     }
-
 
     public static void AddPoints(int newPoints)
     {

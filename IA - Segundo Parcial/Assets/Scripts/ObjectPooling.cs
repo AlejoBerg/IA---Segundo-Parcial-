@@ -12,6 +12,10 @@ public class ObjectPooling : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+    }
+
+    private void Start()
+    {
         FillPool();
     }
 
@@ -20,6 +24,7 @@ public class ObjectPooling : MonoBehaviour
         for (int t=0; t < initialAmount; t++)
         {
             GameObject go = Instantiate(prefab, transform.position, transform.rotation);
+            GameManager.Instance.cops.Add(go);
             go.SetActive(false);
             pool.Add(go);
         }
@@ -31,14 +36,13 @@ public class ObjectPooling : MonoBehaviour
         {
             ret = pool[pool.Count - 1];
             pool.RemoveAt(pool.Count - 1);
-            GameManager.Instance.cops.Add(ret);
         }
         else
         {
             ret = Instantiate(prefab, transform.position, transform.rotation);
-            GameManager.Instance.cops.Add(ret);
         }
         ret.SetActive(true);
+        GameManager.Instance.cops.Add(ret);
         return ret;
     }
 

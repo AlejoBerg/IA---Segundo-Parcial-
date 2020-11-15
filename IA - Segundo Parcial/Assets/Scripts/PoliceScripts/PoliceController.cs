@@ -42,9 +42,10 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     public event Action OnShoot;
 
-
     private void Start()
     {
+        //GameManager.Instance.cops.Add(this.gameObject);
+        print("se creo un policia");
         rb = GetComponent<Rigidbody>();
         anim = GetComponent<Animator>();
 
@@ -52,7 +53,6 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
         RandomWithException rndWithException = new RandomWithException(0, nodes.Length, _startNode);
         var randomEndNode = rndWithException.Randomize();
-        //print($"RandomEndNodeInicial = {randomEndNode} equivale a {nodes[randomEndNode]} ; CurrentNode = {nodes[_startNode]}");
         _myPathfindController = new PathfindController(nodes[_startNode], nodes[randomEndNode]);
         _myPathfindController.Execute();
         _startNode = randomEndNode;
@@ -61,7 +61,6 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         _lineOfSigh = GetComponent<LineOfSight>();
 
         //Steerings
-        //_targetRB = _target.GetComponent<Rigidbody>();
         pursuitSteering = new Pursuit(this.transform, 2);
 
         //FSM
@@ -124,7 +123,7 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
         rb.velocity = Vector3.zero;
         var targ = _lineOfSigh.GetTargetReference();
-        print(targ);
+        //print(targ);
         var direction = pursuitSteering.GetDirection(targ);
         direction.y = 0;
         transform.forward = direction - new Vector3(0.8f,0,0);
@@ -202,7 +201,7 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     public bool IsTargetNear()
     {
-        print(_lineOfSigh.GetDistanceToTarget(_nearDistance));
+        //print(_lineOfSigh.GetDistanceToTarget(_nearDistance));
         return _lineOfSigh.GetDistanceToTarget(_nearDistance);
     }
 
@@ -246,12 +245,13 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         if (life - _damage <= 0)
         {
             anim.SetBool("IsDeath", true);
-            life = 100;
+            print("mataron a policia");
             Respawn();
         }
         else
         {
             life -= _damage;
+            print("sacaron vida a policia = " + life);
         }
     }
 
@@ -269,7 +269,8 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     IEnumerator ReturnToPoolCoroutine()
     {
-        yield return new WaitForSeconds(3);
+        yield return new WaitForSeconds(5);
+        life = 100;
         ObjectPooling.Instance.Return(this.gameObject);
     }
 
