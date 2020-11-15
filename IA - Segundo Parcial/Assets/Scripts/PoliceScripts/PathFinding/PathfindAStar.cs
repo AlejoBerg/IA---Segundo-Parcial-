@@ -25,7 +25,7 @@ public class PathfindAStar<T>
             if (watchdog <= 0) return new List<T>();
 
             T current = pendingVisit.Dequeue();
-            Debug.Log("satisfiesCondition:" + satisfiesCondition(current));
+            //Debug.Log("satisfiesCondition:" + satisfiesCondition(current));
 
             if (satisfiesCondition(current))
             {
@@ -49,7 +49,7 @@ public class PathfindAStar<T>
                     childParent[newItem] = current; //Piso el valor del padre por el nuevo en el caso de que hubiese uno antes 
 
                     pendingVisit.Enqueue(newItem, totalNodeCost + getHeuristic(newItem));
-                    Debug.Log($"No satisfacio, agrego a {newItem}");
+                    //Debug.Log($"No satisfacio, agrego a {newItem}");
                 }
             }
         }

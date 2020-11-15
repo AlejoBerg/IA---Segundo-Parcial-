@@ -8,7 +8,7 @@ public class ActiveAlarmAndIndicator : MonoBehaviour
     [SerializeField] private GameObject indicator;
     private bool playedSound = false;
     private AudioSource audio;
-
+    public event Action OnActivatePool;
 
     private void Awake()
     {
@@ -19,6 +19,7 @@ public class ActiveAlarmAndIndicator : MonoBehaviour
     {
         if (other.gameObject.tag.Equals("Player") && !playedSound)
         {
+            OnActivatePool?.Invoke();
            indicator.SetActive(true);
            playedSound = true;
            audio.Play();

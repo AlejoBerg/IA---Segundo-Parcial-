@@ -8,23 +8,42 @@ public class LineOfSight : MonoBehaviour
     [SerializeField] private float _fieldOfView = 0; //Distancia
     [SerializeField] private float _angleOfVision = 0; //Angulo
     [SerializeField] private LayerMask _obstacleMast;
+    private GameObject _gameObjectRef;
 
     private float _distance = 0;
+    private Vector3 _difference = Vector3.zero;
 
-    public bool IsTargetInSight(GameObject target)
+    public bool IsTargetInSight(List<GameObject> targets)
     {
-        var _diff = target.transform.position - transform.position;
-        _distance = _diff.magnitude;
+        for (int i = 0; i < targets.Count; i++)
+        {
+            var _diff = targets[i].transform.position - transform.position;
+            var dist = _diff.magnitude;
+
+            if (dist <= _fieldOfView)
+            {
+                var angleToTarget = Vector3.Angle(transform.forward, _difference.normalized); // Uso diff y no distance porque el primero es un vector3, el segundo es solamente un float
+                if (angleToTarget <= _angleOfVision)
+                {
+                    _distance = dist;
+                    _difference = _diff;
+                    _gameObjectRef = targets[i];
+                }
+            }
+            _distance = dist;
+            _difference = _diff;
+        }
 
         if (_distance <= _fieldOfView) 
         {
-            var angleToTarget = Vector3.Angle(transform.forward, _diff.normalized); // Uso diff y no distance porque el primero es un vector3, el segundo es solamente un float
+            var angleToTarget = Vector3.Angle(transform.forward, _difference.normalized); // Uso diff y no distance porque el primero es un vector3, el segundo es solamente un float
             if(angleToTarget <= _angleOfVision)
             {
-                if(Physics.Raycast(transform.position, _diff.normalized, _distance, _obstacleMast))
+                if(Physics.Raycast(transform.position, _difference.normalized, _distance, _obstacleMast))
                 {
                     return false; //Colision obstaculo
                 }
+                //_hit = hit;
                 return true;
             }
         }
@@ -41,6 +60,19 @@ public class LineOfSight : MonoBehaviour
         {
             return false;
         }   
+    }
+
+    public GameObject GetTargetReference()
+    {
+        //var gameObjectRef = _hit.collider.GetComponent<GameObject>();
+        if(_gameObjectRef != null)
+        {
+            return _gameObjectRef;
+        }
+        else
+        {
+            return null;
+        }
     }
 
     private void OnDrawGizmos()

@@ -9,53 +9,41 @@ public class ObjectPooling : MonoBehaviour
     [SerializeField] private GameObject prefab;
     [SerializeField] private int initialAmount = 5;               //Arrancan 5 policias
 
-
     private void Awake()
     {
         Instance = this;
         FillPool();
-    }
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     void FillPool()
     {
         for (int t=0; t < initialAmount; t++)
         {
-            GameObject go = Instantiate(prefab);
+            GameObject go = Instantiate(prefab, transform.position, transform.rotation);
             go.SetActive(false);
             pool.Add(go);
         }
     }
     public GameObject Get()
-     {
-            GameObject ret;
-            if (pool.Count > 0 )
-            {
-                ret = pool[pool.Count - 1];
-                pool.RemoveAt(pool.Count - 1);
-            }
-            else
-            {
-                ret = Instantiate(prefab);
-            }
-            ret.SetActive(true);
-            return ret;
-     }
+    {
+        GameObject ret;
+        if (pool.Count > 0 )
+        {
+            ret = pool[pool.Count - 1];
+            pool.RemoveAt(pool.Count - 1);
+        }
+        else
+        {
+            ret = Instantiate(prefab, transform.position, transform.rotation);
+        }
+        ret.SetActive(true);
+        return ret;
+    }
 
      public void Return(GameObject go)
      {
-            go.SetActive(false);
-            pool.Add(go);
+        go.SetActive(false);
+        pool.Add(go);
      }
 
     // Pool.Instance.Get().transform.position = policemanRespawn.position;    Esto lo tenes que poner donde esta la condicion de que el policia muere 

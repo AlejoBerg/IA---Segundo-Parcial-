@@ -20,19 +20,19 @@ public class PathfindController
     public void Execute()
     {
         aStarResult = myAStar.RunPathfinding(initialNode, SatisfiesCondition, GetNeighbour, GetConnectionCost, GetHeuristic, 80);
-        Debug.Log("aStarResult.Count = " + aStarResult.Count);
+        //Debug.Log("aStarResult.Count = " + aStarResult.Count);
     }
 
     public void EditNodes(Node _newInitialNode, Node _newEndNode) 
     {
         initialNode = _newInitialNode;
         endNode = _newEndNode;
-        Debug.Log($"Los nodos editados son: InitialNode = {initialNode} y endNode = {endNode}");
+        //Debug.Log($"Los nodos editados son: InitialNode = {initialNode} y endNode = {endNode}");
     }
 
     private bool SatisfiesCondition(Node _current)
     {
-        Debug.Log($"Satisfies condition CurrentNode = {_current} y endNode = {endNode}");
+        //Debug.Log($"Satisfies condition CurrentNode = {_current} y endNode = {endNode}");
         return _current == endNode;
     }
 

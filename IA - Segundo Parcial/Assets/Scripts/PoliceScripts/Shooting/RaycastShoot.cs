@@ -10,6 +10,7 @@ public class RaycastShoot : MonoBehaviour
     [SerializeField] private float hitForce = 100f; //Cuanto impulso le va a hacer al target
     [SerializeField] private Transform gunEnd; //desded donde sale el raycast, empty
     [SerializeField] private Transform shootPosition; //Puede ser gun end o puede ser la camara 
+    [SerializeField] private LayerMask _layerToAvoid;
 
     private WaitForSeconds shotDuration = new WaitForSeconds(0.1f);
     private AudioSource gunAudio;
@@ -35,9 +36,9 @@ public class RaycastShoot : MonoBehaviour
             RaycastHit hit;
 
             laserLine.SetPosition(0, gunEnd.position);
-            if (Physics.Raycast(shootPosition.transform.position, shootPosition.transform.forward, out hit, weaponRange))
+            if (Physics.Raycast(shootPosition.transform.position, shootPosition.transform.forward, out hit, weaponRange, _layerToAvoid))
             {
-                print("Dispare raycast");
+                print($"Dispare raycast le pegue al {hit.collider.gameObject.name}");
                 laserLine.SetPosition(1, hit.point); //Si colisiona muestro la linea ahi
 
                 IShoot health = hit.collider.GetComponent<IShoot>(); //En vez de pasarle shootable box, le paso una interface idamageable que tenga la funcion Damage que la implementen los vandidos y la policia 
@@ -46,10 +47,10 @@ public class RaycastShoot : MonoBehaviour
                     health.GetDamage(gunDamage);
                 }
 
-                if (hit.rigidbody != null)
-                {
-                    hit.rigidbody.AddForce(-hit.normal * hitForce); //Direccion opuesta a la que choco la bala 
-                }
+                //if (hit.rigidbody != null)
+                //{
+                //    hit.rigidbody.AddForce(-hit.normal * hitForce); //Direccion opuesta a la que choco la bala 
+                //}
             }
             else
             {

@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface ISteering 
 {
-    Vector3 GetDirection();
+    Vector3 GetDirection(GameObject target);
 }
