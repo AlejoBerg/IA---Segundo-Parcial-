@@ -17,7 +17,7 @@ public class MoveTrain : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.tag.Equals("Player"))
+        if (other.gameObject.tag.Equals("Bandit"))
         {
             particles.SetActive(true);
             active = true;

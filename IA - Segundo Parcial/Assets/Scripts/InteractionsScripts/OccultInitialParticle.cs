@@ -14,7 +14,7 @@ public class OccultInitialParticle : MonoBehaviour
     
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.tag.Equals("Player"))
+        if (other.gameObject.tag.Equals("Bandit"))
         {
             audio.Play();
             StartCoroutine(Occult());

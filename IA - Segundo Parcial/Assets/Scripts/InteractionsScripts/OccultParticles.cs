@@ -19,7 +19,7 @@ public class OccultParticles : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.gameObject.tag.Equals("Player"))
+        if (other.gameObject.tag.Equals("Bandit"))
         {
             particles.SetActive(false);
             scoreDisplay.GetComponent<TextFader>().Fade();
@@ -29,7 +29,7 @@ public class OccultParticles : MonoBehaviour
     
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.tag.Equals("Player"))
+        if (other.gameObject.tag.Equals("Bandit"))
         {
             StartCoroutine(CollectMoney());
         }
