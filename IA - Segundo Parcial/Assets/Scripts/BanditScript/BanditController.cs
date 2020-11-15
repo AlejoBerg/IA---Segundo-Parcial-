@@ -5,8 +5,6 @@ using UnityEngine;
 
 public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 {
-    //[SerializeField] private GameObject _target = null;
-    //[SerializeField] private AudioSource reloadGun;
     [SerializeField] private GameObject _player;
     private Rigidbody _targetRB = null;
     private float walkSpeed = 1.5f; //1.1f
@@ -17,15 +15,13 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     private float life;
     [SerializeField] private Vector3 offset = Vector3.zero;     
 
-   
-
     //Ammo
     private float _reloadingAmmoTime = 5;
     private const int _maxAmmo = 5;
     private int _ammoLeft = 0;
 
     //IsTargetNear
-    private float _nearDistance = 8f;    
+    private float _nearDistance = 5f;    
 
     private FSMController<string> _myFSMController;
     private LineOfSight _lineOfSigh = null;
@@ -39,24 +35,22 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     public event Action OnShoot;
 
-    private void Awake()
+    private void Start()
     {
         GameManager.Instance.bandides.Add(this.gameObject);
+        print("me agrego a la lista de bandidos");
 
         transform.position = _player.transform.position + offset;
-        transform.rotation = _player.transform.rotation;       
+        transform.rotation = _player.transform.rotation;
 
         _roulette = new Roulette();
         _dic = new Dictionary<float, int>();
         _dic.Add(1000, 75);
         _dic.Add(1250, 50);
-        _dic.Add(1500, 20);        
+        _dic.Add(1500, 20);
         TypeOfDamage();
-        Debug.Log(life + "mi vida es");
-    }
+        //Debug.Log(life + "mi vida es");
 
-    private void Start()
-    {
         rb = GetComponent<Rigidbody>();
         anim = GetComponent<Animator>();
         
@@ -125,6 +119,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     public void KillTarget() //IATTACK 
     {
+        print("bandido matando a target" );
         //print("shooting");
         anim.SetBool("IsReloading", false);
         anim.SetBool("IsInSight", true);
@@ -132,7 +127,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
         rb.velocity = Vector3.zero;
         var targ = _lineOfSigh.GetTargetReference();
-        print(targ);
+        //print(targ);
         var direction = pursuitSteering.GetDirection(targ);
         direction.y = transform.forward.y;
         transform.forward = direction - new Vector3(1, 0, 0);
@@ -145,6 +140,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         anim.SetBool("IsReloading", false);
         anim.SetBool("IsInSight", false);
         anim.SetInteger("Speed", 2);
+        print("bandido moviendose");
 
         var direction = _obstacleAvoidance.GetDir();        
         direction.y = 0;
@@ -159,6 +155,8 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         anim.SetBool("IsReloading", false);
 
         //print("persiguiendo");
+        print("bandido persiguiendo");
+
         var targ = _lineOfSigh.GetTargetReference();
         rb.velocity = pursuitSteering.GetDirection(targ) * walkSpeed;
         var direction = pursuitSteering.GetDirection(targ);
@@ -168,6 +166,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     public void ReloadAmmo() //IATTACK 
     {
         anim.SetBool("IsReloading", true);
+        print("bandido recargando");
 
         rb.velocity = Vector3.zero;
         var targ = _lineOfSigh.GetTargetReference();
@@ -197,6 +196,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     public bool IsTargetInSight()
     {
+        print("estoy viendo a un policia");
         return _lineOfSigh.IsTargetInSight(GameManager.Instance.cops);
     }
 
@@ -224,7 +224,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     void TypeOfDamage()
     {
         life = _roulette.Run(_dic);
-        Debug.Log(_roulette.Run(_dic));
+        //////Debug.Log(_roulette.Run(_dic));
     }
 
 

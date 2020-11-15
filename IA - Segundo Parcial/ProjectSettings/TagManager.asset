@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Train
   - Floor
+  - Bandit
   layers:
   - Default
   - TransparentFX

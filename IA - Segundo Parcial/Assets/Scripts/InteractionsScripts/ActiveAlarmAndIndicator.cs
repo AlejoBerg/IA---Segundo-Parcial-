@@ -17,9 +17,9 @@ public class ActiveAlarmAndIndicator : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.tag.Equals("Player") && !playedSound)
+        if (other.gameObject.tag.Equals("Bandit") && !playedSound)
         {
-            OnActivatePool?.Invoke();
+           OnActivatePool?.Invoke();
            indicator.SetActive(true);
            playedSound = true;
            audio.Play();

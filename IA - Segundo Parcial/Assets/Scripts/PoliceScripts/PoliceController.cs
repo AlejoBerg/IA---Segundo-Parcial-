@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 {
-    [SerializeField] private GameObject _target = null;
+    //[SerializeField] private GameObject _target = null;
     //[SerializeField] private AudioSource reloadGun;
     private Rigidbody _targetRB = null;
     private float walkSpeed = 2f; //1.1f
@@ -114,12 +114,10 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     private void Update()
     {
         _initialNode.Execute();
-        //_myFSMController.OnUpdate();
     }
 
     public void KillTarget() //IATTACK 
     {
-        //print("shooting");
         anim.SetBool("IsReloading", false);
         anim.SetBool("IsInSight", true);
         anim.SetInteger("Speed", 0);
@@ -128,8 +126,8 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         var targ = _lineOfSigh.GetTargetReference();
         print(targ);
         var direction = pursuitSteering.GetDirection(targ);
-        direction.y = transform.forward.y;
-        transform.forward = direction - new Vector3(1,0,0);
+        direction.y = 0;
+        transform.forward = direction - new Vector3(0.8f,0,0);
         OnShoot?.Invoke();
         _ammoLeft -= 1;
     } 
@@ -152,7 +150,6 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         anim.SetBool("IsInSight", false);
         anim.SetBool("IsReloading", false);
 
-        //print("persiguiendo");
         var targ = _lineOfSigh.GetTargetReference();
         rb.velocity = pursuitSteering.GetDirection(targ) * walkSpeed;
         var direction = pursuitSteering.GetDirection(targ);
@@ -165,7 +162,7 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
         rb.velocity = Vector3.zero;
         var targ = _lineOfSigh.GetTargetReference();
-        var direction = pursuitSteering.GetDirection(targ) - new Vector3(1, 0, 0);
+        var direction = pursuitSteering.GetDirection(targ) - new Vector3(0.8f, 0, 0);
         direction.y = transform.forward.y;
         transform.forward = Vector3.Lerp(transform.forward, direction, 5 * Time.deltaTime);
         StartCoroutine(ReloadingAmmo(_reloadingAmmoTime));
@@ -174,11 +171,12 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     public void Respawn() 
     {
         anim.SetBool("IsDeath", false);
+        StartCoroutine(ReturnToPoolCoroutine());
     }
 
     public bool WalkedTime()
     {
-        if(_currentWalkedTime > _walkTimeBeforeIdle)
+        if (_currentWalkedTime > _walkTimeBeforeIdle)
         {
             return true;
         }
@@ -190,7 +188,6 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     public bool IsTargetInSight() 
     {
-        print(_lineOfSigh.IsTargetInSight(GameManager.Instance.bandides));
         return _lineOfSigh.IsTargetInSight(GameManager.Instance.bandides);
     }
 
@@ -211,7 +208,6 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     private Vector3 GetNextPosition() //aca
     {
-        //print("GetNextPosition: nextWayPoint = " + nextWayPoint);
         var nextPointPosition = _myPathfindController.AStarResult[nextWayPoint].transform.position;
         nextPointPosition.y = transform.position.y;
         Vector3 direction = nextPointPosition - transform.position;
@@ -221,14 +217,12 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
             if (nextWayPoint < _myPathfindController.AStarResult.Count - 1)
             {
                 nextWayPoint += wayPointIncrease;
-                //print("nextWayPointIncreased = " + nextWayPoint);
             }
             else
             {
                 nextWayPoint = 0;
                 RandomWithException randomWithException = new RandomWithException(0, nodes.Length, _startNode);
                 var randomEndNode = randomWithException.Randomize();
-                //print($"RandomEndNode = {randomEndNode} equivale a {nodes[randomEndNode]} ; CurrentNode = {nodes[_startNode]}");
                 _myPathfindController.EditNodes(nodes[_startNode], nodes[randomEndNode]);
                 _myPathfindController.Execute();
                 _startNode = randomEndNode;
@@ -247,6 +241,20 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         StartCoroutine(WaitToRecover());
     }
 
+    public void GetDamage(float _damage)
+    {
+        if (life - _damage <= 0)
+        {
+            anim.SetBool("IsDeath", true);
+            life = 100;
+            Respawn();
+        }
+        else
+        {
+            life -= _damage;
+        }
+    }
+
     IEnumerator ReloadingAmmo(float reloadingAmmoTime)
     {
         yield return new WaitForSeconds(reloadingAmmoTime);
@@ -259,17 +267,11 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         _currentWalkedTime = 0;
     }
 
-    public void GetDamage(float _damage)
+    IEnumerator ReturnToPoolCoroutine()
     {
-        if(life - _damage <= 0)
-        {
-            anim.SetBool("IsDeath", true);
-            life = 100;
-            Respawn();
-        }
-        else
-        {
-            life -= _damage;
-        }
+        yield return new WaitForSeconds(3);
+        ObjectPooling.Instance.Return(this.gameObject);
     }
+
+    
 }

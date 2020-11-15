@@ -7,7 +7,7 @@ public class ObjectPooling : MonoBehaviour
     public static ObjectPooling Instance { get; private set; }
     List<GameObject> pool = new List<GameObject>();
     [SerializeField] private GameObject prefab;
-    [SerializeField] private int initialAmount = 5;               //Arrancan 5 policias
+    [SerializeField] private int initialAmount = 5;
 
     private void Awake()
     {
@@ -31,10 +31,12 @@ public class ObjectPooling : MonoBehaviour
         {
             ret = pool[pool.Count - 1];
             pool.RemoveAt(pool.Count - 1);
+            GameManager.Instance.cops.Add(ret);
         }
         else
         {
             ret = Instantiate(prefab, transform.position, transform.rotation);
+            GameManager.Instance.cops.Add(ret);
         }
         ret.SetActive(true);
         return ret;
@@ -44,21 +46,8 @@ public class ObjectPooling : MonoBehaviour
      {
         go.SetActive(false);
         pool.Add(go);
+        GameManager.Instance.cops.Remove(go);
      }
-
-    // Pool.Instance.Get().transform.position = policemanRespawn.position;    Esto lo tenes que poner donde esta la condicion de que el policia muere 
-    
-    /*void OnEnable()
-    {
-        StartCoroutine(ReturnToPoolCoroutine());
-    }
-                                                                                 Esto se lo asignas al script del policia donde hace respawn. ttl es una variable que significa tiempo de vida, lo puse para la coroutine, pero vos cambia esa variable por lo que quieras.
-    IEnumerator ReturnToPoolCoroutine()
-    {
-        yield return new WaitForSeconds(ttl);
-        ObjectPooling.Instance.Return(GameObject);
-    }*/
-
 }
 
 

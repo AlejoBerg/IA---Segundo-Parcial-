@@ -21,7 +21,6 @@ public class PoliceSpawner : MonoBehaviour
             if(curretTimer >= timerCounterToSpawn)
             {
                 curretTimer = 0;
-                //print("Instanciando ia");
                 ObjectPooling.Instance.Get();
             }
             else
@@ -34,6 +33,5 @@ public class PoliceSpawner : MonoBehaviour
     private void OnActivatePoolHandler()
     {
         canInstantiateIA = true;
-        //print("Arranco a instanciar policias");
     }
 }

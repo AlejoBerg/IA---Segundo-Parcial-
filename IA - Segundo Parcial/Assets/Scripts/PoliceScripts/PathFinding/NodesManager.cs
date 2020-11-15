@@ -9,7 +9,7 @@ public class NodesManager : MonoBehaviour
 
     private void Awake()
     {
-        print("me creo");
+        //print("me creo");
         Instance = this;
     }
 
