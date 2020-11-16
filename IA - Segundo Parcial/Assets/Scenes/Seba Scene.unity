@@ -20292,7 +20292,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   neighbourNodes:
   - {fileID: 1710108980}
-  - {fileID: 986636190}
+  - {fileID: 1498431802}
 --- !u!4 &491347221
 Transform:
   m_ObjectHideFlags: 0
@@ -20301,7 +20301,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 491347219}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -7.461275, y: 0.44772553, z: -1.006}
+  m_LocalPosition: {x: -6.275, y: 0.44772553, z: -1.433}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 803924533}
@@ -39531,7 +39531,6 @@ MonoBehaviour:
   - {fileID: 1710108980}
   - {fileID: 1498431802}
   - {fileID: 231529401}
-  - {fileID: 1996601923}
 --- !u!4 &978201278
 Transform:
   m_ObjectHideFlags: 0
@@ -44559,7 +44558,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   neighbourNodes:
-  - {fileID: 491347220}
   - {fileID: 1795730296}
 --- !u!4 &986636191
 Transform:
