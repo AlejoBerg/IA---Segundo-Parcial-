@@ -42,9 +42,4 @@ public class ObstacleAvoidance2 : MonoBehaviour
         //retornamos la direccion final
         return dirToTarget.normalized;
     }
-
-    public void ChangeTarget(Transform newTarget)
-    {
-        _target = newTarget;
-    }
 }
