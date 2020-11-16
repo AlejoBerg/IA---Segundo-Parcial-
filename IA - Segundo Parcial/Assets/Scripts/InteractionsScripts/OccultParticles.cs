@@ -9,6 +9,7 @@ public class OccultParticles : MonoBehaviour
     [SerializeField] private GameObject[] money;
     [SerializeField] private GameObject scoreDisplay;
     [SerializeField] private GameObject textToDisplay;
+    [SerializeField] private GameObject textToDisplay2;
     [SerializeField] private AudioSource audio;
     private bool stop = false;
     private int cont = 0;
@@ -30,7 +31,8 @@ public class OccultParticles : MonoBehaviour
             }
             else
             {
-                
+                textToDisplay2.GetComponent<TextFader>().Fade();
+                StartCoroutine(OccultPanel());
             }
         }
     }
@@ -51,14 +53,20 @@ public class OccultParticles : MonoBehaviour
             money[i].SetActive(false);
             GameManager.AddPoints(1000);
             stop = true;
-            cont = i;
             if (i == 16)
             {
+                cont = 16;
                 textToDisplay.GetComponent<TextFader>().Fade();
                 audio.Play();
             }
             yield return new  WaitForSeconds(2f);
         }
         yield return null;
+    }
+    
+    IEnumerator OccultPanel()
+    {
+        yield return new  WaitForSeconds(2f);
+        textToDisplay2.GetComponent<TextFader>().Fade();
     }
 }
