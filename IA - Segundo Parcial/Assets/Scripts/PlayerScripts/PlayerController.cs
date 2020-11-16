@@ -15,6 +15,8 @@ public class PlayerController : MonoBehaviour, IShoot
     private void Start()
     {
         GameManager.Instance.bandides.Add(this.gameObject);
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     public void GetDamage(float _damage)

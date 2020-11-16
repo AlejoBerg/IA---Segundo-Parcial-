@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,7 +8,8 @@ public class ObstacleAvoidance2 : MonoBehaviour
     [SerializeField] private Transform _target;
     [SerializeField] private float _radius;
     [SerializeField] private LayerMask _mask;
-    [SerializeField] private float _avoidWeight;    
+    [SerializeField] private float _avoidWeight;
+
 
     public Vector3 GetDir()
     {
@@ -39,5 +41,10 @@ public class ObstacleAvoidance2 : MonoBehaviour
         }
         //retornamos la direccion final
         return dirToTarget.normalized;
+    }
+
+    public void ChangeTarget(Transform newTarget)
+    {
+        _target = newTarget;
     }
 }

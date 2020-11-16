@@ -40,10 +40,11 @@ public class RaycastShoot : MonoBehaviour
             {
                 //print($"Dispare raycast le pegue al {hit.collider.gameObject.name}");
                 laserLine.SetPosition(1, hit.point); //Si colisiona muestro la linea ahi
-
-                IShoot health = hit.collider.GetComponentInParent<IShoot>(); //En vez de pasarle shootable box, le paso una interface idamageable que tenga la funcion Damage que la implementen los vandidos y la policia 
+                print("dispare");
+                IShoot health = hit.collider.GetComponent<IShoot>(); //En vez de pasarle shootable box, le paso una interface idamageable que tenga la funcion Damage que la implementen los vandidos y la policia 
                 if (health != null)
                 {
+                    print("health != null");
                     health.GetDamage(gunDamage);
                 }
 

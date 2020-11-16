@@ -48,7 +48,7 @@ public class OccultParticles : MonoBehaviour
                 textToDisplay.GetComponent<TextFader>().Fade();
                 audio.Play();
             }
-            yield return new  WaitForSeconds(0.6f);
+            yield return new  WaitForSeconds(2f);
         }
         yield return null;
     }

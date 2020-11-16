@@ -36,6 +36,7 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     private FSMController<string> _myFSMController;
     private LineOfSight _lineOfSigh = null;
     private INode _initialNode;
+    private QuestionNode _iAmAlive;
 
     //Steering
     private Pursuit pursuitSteering;
@@ -106,8 +107,9 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         QuestionNode isTargetNear = new QuestionNode(IsTargetNear, haveAmmo, pursuit);
         QuestionNode amIExhausted = new QuestionNode(WalkedTime, idle, walk);
         QuestionNode isInSight = new QuestionNode(IsTargetInSight, isTargetNear, amIExhausted);
+        _iAmAlive = new QuestionNode(CheckLife, isInSight, respawn);
 
-        _initialNode = isInSight;
+        _initialNode = _iAmAlive;
     }
 
     private void Update()
@@ -162,14 +164,14 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         rb.velocity = Vector3.zero;
         var targ = _lineOfSigh.GetTargetReference();
         var direction = pursuitSteering.GetDirection(targ) - new Vector3(0.8f, 0, 0);
-        direction.y = transform.forward.y;
+        direction.y = 0;
         transform.forward = Vector3.Lerp(transform.forward, direction, 5 * Time.deltaTime);
         StartCoroutine(ReloadingAmmo(_reloadingAmmoTime));
     } 
 
     public void Respawn() 
     {
-        anim.SetBool("IsDeath", false);
+        anim.SetBool("IsDeath", true);
         StartCoroutine(ReturnToPoolCoroutine());
     }
 
@@ -255,6 +257,19 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         }
     }
 
+    public bool CheckLife()
+    {
+        if (life > 0)
+        {
+            print("Police life " + life);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     IEnumerator ReloadingAmmo(float reloadingAmmoTime)
     {
         yield return new WaitForSeconds(reloadingAmmoTime);
@@ -269,8 +284,11 @@ public class PoliceController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     IEnumerator ReturnToPoolCoroutine()
     {
-        yield return new WaitForSeconds(5);
+        yield return new WaitForSeconds(2);
+        _initialNode = _iAmAlive;
+        anim.SetBool("IsDeath", false);
         life = 100;
+        transform.position = new Vector3(-23, 0.3f, -47);
         ObjectPooling.Instance.Return(this.gameObject);
     }
 

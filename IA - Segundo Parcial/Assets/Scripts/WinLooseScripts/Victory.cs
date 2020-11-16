@@ -8,7 +8,7 @@ public class Victory : MonoBehaviour
 {
    private void OnCollisionEnter(Collision other)
     {
-        if (other.gameObject.tag.Equals("Player"))
+        if (other.gameObject.tag.Equals("Bandide"))
         {
             SceneManager.LoadScene(3);
         }

@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 {
-    [SerializeField] private GameObject _player;
+    [SerializeField] private GameObject _target;
     private Rigidbody _targetRB = null;
     private float walkSpeed = 1.5f; //1.1f
     private Rigidbody rb = null;
@@ -40,8 +40,8 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         GameManager.Instance.bandides.Add(this.gameObject);
         //print("me agrego a la lista de bandidos");
 
-        transform.position = _player.transform.position + offset;
-        transform.rotation = _player.transform.rotation;
+        transform.position = _target.transform.position + offset;
+        transform.rotation = _target.transform.rotation;
 
         _roulette = new Roulette();
         _dic = new Dictionary<float, int>();
@@ -53,7 +53,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
         rb = GetComponent<Rigidbody>();
         anim = GetComponent<Animator>();
-        
+        anim.SetBool("IsDeath", true);
 
         _ammoLeft = _maxAmmo;
         _lineOfSigh = GetComponent<LineOfSight>();
@@ -104,10 +104,11 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
         QuestionNode haveAmmo = new QuestionNode(CheckAmmoLeft, kill, reloadAmmo);
         QuestionNode isTargetNear = new QuestionNode(IsTargetNear, haveAmmo, pursuit);
-        QuestionNode isPlayerMoving = new QuestionNode(PlayerVelocity, walk, idle);
+        QuestionNode isPlayerMoving = new QuestionNode(CheckTargetVelocity, walk, idle);
         QuestionNode isInSight = new QuestionNode(IsTargetInSight, isTargetNear, isPlayerMoving);
+        QuestionNode iAmAlive = new QuestionNode(CheckLife, isInSight, dead);
 
-        _initialNode = isInSight;       
+        _initialNode = iAmAlive;       
 
     }
 
@@ -129,7 +130,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         var targ = _lineOfSigh.GetTargetReference();
         //print(targ);
         var direction = pursuitSteering.GetDirection(targ);
-        direction.y = transform.forward.y;
+        direction.y = 0;
         transform.forward = direction - new Vector3(-1, 0, 0);
         OnShoot?.Invoke();
         _ammoLeft -= 1;
@@ -171,20 +172,22 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         rb.velocity = Vector3.zero;
         var targ = _lineOfSigh.GetTargetReference();
         var direction = pursuitSteering.GetDirection(targ) - new Vector3(-1, 0, 0);
-        direction.y = transform.forward.y;
+        direction.y = 0;
         transform.forward = Vector3.Lerp(transform.forward, direction, 5 * Time.deltaTime);
         StartCoroutine(ReloadingAmmo(_reloadingAmmoTime));
     }
 
     public void Dead()
     {
-        anim.SetBool("IsDeath", false);
+        anim.SetBool("IsDeath", true);
+        GameManager.Instance.bandides.Remove(this.gameObject);
+        Destroy(gameObject, 2.3f);
     }
 
-    public bool PlayerVelocity()
+    public bool CheckTargetVelocity()
     {
-        var playerRbRef = _player.GetComponent<Rigidbody>();
-        if (playerRbRef.velocity.magnitude > 1)
+        var targetRbRef = _target.GetComponent<Rigidbody>();
+        if (targetRbRef.velocity.magnitude > 1)
         {
             return true;
         }
@@ -220,6 +223,11 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
         anim.SetInteger("Speed", 0);       
     }   
 
+    public void ChangeTarget(GameObject _newTarget)
+    {
+        _target = _newTarget;
+    }
+
     void TypeOfDamage()
     {
         life = _roulette.Run(_dic);
@@ -235,17 +243,21 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
     public void GetDamage(float _damage)
     {
-        if (life - _damage <= 0)
+        life -= _damage;
+    }
+
+    public bool CheckLife() 
+    {
+        if(life > 0)
         {
-            anim.SetBool("IsDeath", true);
-            print("bandido se muere");
-            Dead();
+            //print("life " + life);
+            return true;
         }
         else
         {
-            life -= _damage;
-            print("le sacan vida a bandido, ahora es " + life);
+            return false;
         }
     }
+
 }
 

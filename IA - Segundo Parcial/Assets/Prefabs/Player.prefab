@@ -551,7 +551,7 @@ MonoBehaviour:
   shootPosition: {fileID: 8383138749555235952}
   _layerToAvoid:
     serializedVersion: 2
-    m_Bits: 512
+    m_Bits: 1024
 --- !u!1 &5294568019992230513
 GameObject:
   m_ObjectHideFlags: 0
