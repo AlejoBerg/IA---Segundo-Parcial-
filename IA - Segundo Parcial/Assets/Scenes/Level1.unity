@@ -44252,7 +44252,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 980284855}
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -22.904, y: -0.228, z: -48.042}
+  m_LocalPosition: {x: -22.904, y: -0.228, z: -46.97}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 841411583}
@@ -55283,7 +55283,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   train: {fileID: 952611295}
   particles: {fileID: 980284855}
-  speedTrain: 0.02
+  speedTrain: 5
 --- !u!65 &1348669184
 BoxCollider:
   m_ObjectHideFlags: 0

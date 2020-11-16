@@ -12,7 +12,7 @@ public class MoveTrain : MonoBehaviour
     
     private void Update()
     {
-        if(active){train.transform.position = new Vector3(train.transform.position.x + speedTrain,train.transform.position.y,train.transform.position.z);}
+        if(active){train.transform.position = new Vector3(train.transform.position.x + speedTrain * Time.deltaTime,train.transform.position.y,train.transform.position.z);}
     }
 
     private void OnTriggerEnter(Collider other)
