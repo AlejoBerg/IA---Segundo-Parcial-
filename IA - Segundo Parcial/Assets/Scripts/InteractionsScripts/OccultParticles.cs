@@ -11,6 +11,7 @@ public class OccultParticles : MonoBehaviour
     [SerializeField] private GameObject textToDisplay;
     [SerializeField] private GameObject textToDisplay2;
     [SerializeField] private AudioSource audio;
+    [SerializeField] private GameObject activeCollider;
     private bool stop = false;
     private int cont = 0;
 
@@ -23,11 +24,12 @@ public class OccultParticles : MonoBehaviour
     {
         if (other.gameObject.tag.Equals("Bandit"))
         {
-            if(cont == 16)
+            if (cont == 16)
             {
                 particles.SetActive(false);
                 scoreDisplay.GetComponent<TextFader>().Fade();
                 textToDisplay.GetComponent<TextFader>().Fade();
+                activeCollider.SetActive(true);
             }
             else
             {
@@ -36,7 +38,7 @@ public class OccultParticles : MonoBehaviour
             }
         }
     }
-    
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.tag.Equals("Bandit"))
@@ -49,7 +51,7 @@ public class OccultParticles : MonoBehaviour
     {
         for (int i = 0; i < money.Length; i++)
         {
-            if(!stop){scoreDisplay.GetComponent<TextFader>().Fade();}
+            if (!stop) { scoreDisplay.GetComponent<TextFader>().Fade(); }
             money[i].SetActive(false);
             GameManager.AddPoints(1000);
             stop = true;
@@ -59,14 +61,14 @@ public class OccultParticles : MonoBehaviour
                 textToDisplay.GetComponent<TextFader>().Fade();
                 audio.Play();
             }
-            yield return new  WaitForSeconds(2f);
+            yield return new WaitForSeconds(2f);
         }
         yield return null;
     }
-    
+
     IEnumerator OccultPanel()
     {
-        yield return new  WaitForSeconds(2f);
+        yield return new WaitForSeconds(2f);
         textToDisplay2.GetComponent<TextFader>().Fade();
     }
 }

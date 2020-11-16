@@ -7,7 +7,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 {
     [SerializeField] private GameObject _target;
     private Rigidbody _targetRB = null;
-    private float walkSpeed = 1.5f; //1.1f
+    private float walkSpeed = 2f; //1.1f
     private Rigidbody rb = null;
     private Animator anim;
     private Roulette _roulette;
