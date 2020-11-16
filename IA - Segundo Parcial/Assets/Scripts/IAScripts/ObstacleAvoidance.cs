@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ObstacleAvoidance2 : MonoBehaviour
+public class ObstacleAvoidance : MonoBehaviour
 {   
     [SerializeField] private Transform _target;
     [SerializeField] private float _radius;

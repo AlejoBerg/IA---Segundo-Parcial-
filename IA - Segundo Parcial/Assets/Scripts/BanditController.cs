@@ -28,7 +28,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
     private INode _initialNode;
 
     //ObstacleAvoidance
-    private ObstacleAvoidance2 _obstacleAvoidance;
+    private ObstacleAvoidance _obstacleAvoidance;
 
     //Steering
     private Pursuit pursuitSteering;
@@ -58,7 +58,7 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
 
         //Steerings
-        _obstacleAvoidance = GetComponent<ObstacleAvoidance2>();
+        _obstacleAvoidance = GetComponent<ObstacleAvoidance>();
         pursuitSteering = new Pursuit(this.transform, 2);
 
         //FSM
