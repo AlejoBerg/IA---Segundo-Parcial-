@@ -44,9 +44,9 @@ public class BanditController : MonoBehaviour, IMove, IAttack, IIdle, IShoot
 
         _roulette = new Roulette();
         _dic = new Dictionary<float, int>();
-        _dic.Add(1000, 75);
-        _dic.Add(1250, 50);
-        _dic.Add(1500, 20);
+        _dic.Add(300, 75);
+        _dic.Add(400, 50);
+        _dic.Add(500, 20);
         TypeOfDamage();
 
         rb = GetComponent<Rigidbody>();

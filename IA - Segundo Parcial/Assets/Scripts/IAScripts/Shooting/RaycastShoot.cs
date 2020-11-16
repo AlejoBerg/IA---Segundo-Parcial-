@@ -28,9 +28,9 @@ public class RaycastShoot : MonoBehaviour
 
     public void OnShootHandler()
     {
-        if (Time.time > nextFire) //Si apreta click izquierdo y si paso suficiente tiempo desde el ultimo disparo 
+        if (Time.time > nextFire) 
         {
-            nextFire = Time.time + fireRate; //Cada vez que disparo guardo el tiempo actual + fire rate y cuando time.time haya alcanzado ese valor puedo disparar denuevo.
+            nextFire = Time.time + fireRate; 
 
             StartCoroutine(ShotEffect());
             RaycastHit hit;
@@ -38,24 +38,18 @@ public class RaycastShoot : MonoBehaviour
             laserLine.SetPosition(0, gunEnd.position);
             if (Physics.Raycast(shootPosition.transform.position, shootPosition.transform.forward, out hit, weaponRange, _layerToAvoid))
             {
-                //print($"Dispare raycast le pegue al {hit.collider.gameObject.name}");
-                laserLine.SetPosition(1, hit.point); //Si colisiona muestro la linea ahi
+                laserLine.SetPosition(1, hit.point); 
                 print("dispare");
-                IShoot health = hit.collider.GetComponent<IShoot>(); //En vez de pasarle shootable box, le paso una interface idamageable que tenga la funcion Damage que la implementen los vandidos y la policia 
+                IShoot health = hit.collider.GetComponent<IShoot>();  
                 if (health != null)
                 {
                     print("health != null");
                     health.GetDamage(gunDamage);
                 }
-
-                //if (hit.rigidbody != null)
-                //{
-                //    hit.rigidbody.AddForce(-hit.normal * hitForce); //Direccion opuesta a la que choco la bala 
-                //}
             }
             else
             {
-                laserLine.SetPosition(1, shootPosition.transform.position + shootPosition.transform.forward * weaponRange); //Si no choco contra nada dibujar el rayo 
+                laserLine.SetPosition(1, shootPosition.transform.position + shootPosition.transform.forward * weaponRange); 
             }
         }
     }

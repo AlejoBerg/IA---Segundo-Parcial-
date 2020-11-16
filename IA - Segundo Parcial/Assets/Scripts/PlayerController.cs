@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour, IShoot
     public event Action OnShoot;
     public event Action OnDead;
     public event Action OnWin;
+    private Animator anim;
 
     private float life = 100;
 
@@ -17,6 +18,8 @@ public class PlayerController : MonoBehaviour, IShoot
         GameManager.Instance.bandides.Add(this.gameObject);
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
+        anim = GetComponent<Animator>();
+
     }
 
     public void GetDamage(float _damage)
@@ -37,6 +40,7 @@ public class PlayerController : MonoBehaviour, IShoot
     {
         if (Input.GetButtonDown("Fire1"))
         {
+            anim.SetBool("IsInSight", true);
             OnShoot?.Invoke();
         }
     }

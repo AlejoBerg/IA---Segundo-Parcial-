@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 
 public class Victory : MonoBehaviour
 {
-   private void OnCollisionEnter(Collision other)
+    private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.tag.Equals("Bandit"))
         {
