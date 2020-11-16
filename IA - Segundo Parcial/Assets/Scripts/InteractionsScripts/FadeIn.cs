@@ -16,7 +16,7 @@ public class FadeIn : MonoBehaviour
 
     IEnumerator DoFade()
     {
-        yield return new WaitForSeconds(5);
+        yield return new WaitForSeconds(3);
         itemToFade.GetComponent<TextFader>().Fade();
         yield return null;
     }

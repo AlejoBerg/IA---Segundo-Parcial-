@@ -11,6 +11,7 @@ public class OccultParticles : MonoBehaviour
     [SerializeField] private GameObject textToDisplay;
     [SerializeField] private AudioSource audio;
     private bool stop = false;
+    private int cont = 0;
 
     private void Awake()
     {
@@ -21,9 +22,16 @@ public class OccultParticles : MonoBehaviour
     {
         if (other.gameObject.tag.Equals("Bandit"))
         {
-            particles.SetActive(false);
-            scoreDisplay.GetComponent<TextFader>().Fade();
-            textToDisplay.GetComponent<TextFader>().Fade();
+            if(cont == 16)
+            {
+                particles.SetActive(false);
+                scoreDisplay.GetComponent<TextFader>().Fade();
+                textToDisplay.GetComponent<TextFader>().Fade();
+            }
+            else
+            {
+                
+            }
         }
     }
     
@@ -43,6 +51,7 @@ public class OccultParticles : MonoBehaviour
             money[i].SetActive(false);
             GameManager.AddPoints(1000);
             stop = true;
+            cont = i;
             if (i == 16)
             {
                 textToDisplay.GetComponent<TextFader>().Fade();
